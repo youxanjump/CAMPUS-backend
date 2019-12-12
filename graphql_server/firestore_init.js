@@ -103,7 +103,7 @@ async function updateToyExample() {
       title: '工程三館',
       accessibility: 3.0, // from 1.0 to 5.0 rating
       missionID: missionList['無障礙設施'].id,
-      findingIDs: [discoveryList['下雨濕滑'].id],
+      discoveryIDs: [discoveryList['下雨濕滑'].id],
       coordinates: new admin.firestore.GeoPoint(24.786671229129603, 120.99745541810988),
       // (latitude, longitude)
     };
@@ -114,7 +114,7 @@ async function updateToyExample() {
     const toyDetail = {
       createTime: admin.firestore.FieldValue.serverTimestamp(),
       lastUpdateTime: admin.firestore.FieldValue.serverTimestamp(),
-      createUser: 'TOY',
+      createUserID: 'TOY',
       location: {
         geoInfo: {
           // specific format of geojson

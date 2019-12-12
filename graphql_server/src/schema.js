@@ -8,7 +8,7 @@ const typeDefs = gql`
     tagRenderList: [Tag]
     tagDetail(id: ID!): TagDetail
     missionList: [Mission]
-    findingList: [Finding]
+    discoveryList: [Discovery]
   }
 
   type Tag {
@@ -16,8 +16,8 @@ const typeDefs = gql`
     title: String
     accessibility: Float
     mission: Mission
-    findings: [Finding]
-    coordinates: String
+    discoveries: [Discovery]
+    coordinates: Coordinate
     tagDetail: TagDetail
   }
 
@@ -40,13 +40,18 @@ const typeDefs = gql`
       geoInfo: JSON # import json type
   }
 
+  type Coordinate {
+    latitude: String
+    longitude: String
+  }
+
   type Mission {
       id: ID!
       name: String
-      findings: [Finding]
+      discoveries: [Discovery]
   }
 
-  type Finding {
+  type Discovery {
       id: ID!
       missionID: String
       name: String

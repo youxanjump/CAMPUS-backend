@@ -6,19 +6,38 @@ module.exports = {
       dataSources.firestoreAPI.getTagDetail({ tagID: id }),
     missionList: async (_, __, { dataSources }) =>
       dataSources.firestoreAPI.getMissionList(),
-    findingList: async (_, __, { dataSources }) =>
-      dataSources.firestoreAPI.getFindingList(),
+    discoveryList: async (_, __, { dataSources }) =>
+      dataSources.firestoreAPI.getDiscoveryList(),
   },
   Tag: {
     tagDetail: async (tag, _, { dataSources }) =>
       dataSources.firestoreAPI.getTagDetail({ tagID: tag.id }),
-    mission: async (parent, _, { dataSources }) =>
-      dataSources.firestoreAPI.getMissionById({ id: parent.missionID }),
-    findings: async (parent, _, { dataSources }) =>
-      dataSources.firestoreAPI.getFindingsById({ id: parent.findingIDs }),
+    mission: async (tag, _, { dataSources }) =>
+      dataSources.firestoreAPI.getMissionById({ id: tag.missionID }),
+    discoveries: async (tag, _, { dataSources }) => 
+      dataSources.firestoreAPI.getDiscoveriesById({ ids: tag.discoveryIDs }),
+  },
+  TagDetail: {
+    createTime: async (tagDetail, _, __) =>
+      tagDetail.createTime.toDate().toString(),
+    lastUpdateTime: async (tagDetail, _, __) =>
+      tagDetail.lastUpdateTime.toDate().toString(),
+    createUser: async (tagDetail, _, __) =>
+      tagDetail.createUserID,
+  },
+  User: {
+    id: async (userId, _, { dataSources }) =>
+      userId,
   },
   Mission: {
-    findings: async (mission, _, { dataSources }) =>
-      dataSources.firestoreAPI.getTagDetail({ missionID: mission.id }),
+    discoveries: async (mission, _, { dataSources }) =>
+      dataSources.firestoreAPI.getDiscoveriesOfAMission({ missionID: mission.id }),
   },
+  Coordinate: {
+    //TODO: figure out why it is coordinates rather than tag
+    latitude: async (coordinates, _, __) => 
+      coordinates.latitude.toString(),
+    longitude: async (coordinates, _, __) =>
+      coordinates.longitude.toString(),
+  }
 };

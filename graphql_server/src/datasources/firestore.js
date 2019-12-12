@@ -63,13 +63,13 @@ class FirestoreAPI extends DataSource {
   async getTagDetail({ tagID }) {
     const doc = await this.firestore
       .collection('tagDetail').doc(tagID).get();
-    if (!doc) {
-      return {
-        id: doc.id,
-        ...doc.data(),
-      };
+    if (!doc.exists) {
+      return null;
     }
-    return null;
+    return {
+      tagID: doc.id,
+      ...doc.data(),
+    };
   }
 
   /**
@@ -104,53 +104,62 @@ class FirestoreAPI extends DataSource {
   }
 
   /**
-   * get all mission from collection "finding_list"
+   * get all mission from collection "discovery_list"
    */
-  async getFindingList() {
-    const findingList = await this.getList('findingList');
-    return findingList;
+  async getDiscoveryList() {
+    const discoveryList = await this.getList('discoveryList');
+    return discoveryList;
   }
 
   /**
-   * get finding detail with specific id
+   * get discovery detail with specific id
    */
-  async getFindingById({ id }) {
-    let finding = {};
+  async getDiscoveriesById({ ids }) {
+    let discoveryList = {};
     try {
-      const docRef = this.firestore
-        .collection('findingList').doc(id);
-      const doc = await docRef.get();
-      if (!doc.exists) {
-        console.log(`can't get document: ${id}`);
-        finding = { message: `no such document: ${id}` };
-      }
-      finding = {
-        id: doc.id,
-        ...doc.data(),
-      };
+      const docRefList = ids.map(id => ({
+        id,
+        docSnap: this.firestore
+          .collection('discoveryList').doc(id),
+      }));
+      const discoveriesAsync = docRefList.map(async ({ id, docSnap }) => {
+        let discovery = {};
+        const doc = await docSnap.get();
+        if (!doc.exists) {
+          console.log(`can't get document: ${id}`);
+          discovery = { message: `no such document: ${id}` };
+          return discovery;
+        }
+        discovery = {
+          id: doc.id,
+          ...doc.data(),
+        };
+        return discovery;
+      });
+      discoveryList = await Promise.all(discoveriesAsync);
+      console.log(discoveryList);
     } catch (err) {
-      console.log(`can't get document: ${id}, ${err} `);
+      console.log(`${err} `);
     }
-    return finding;
+    return discoveryList;
   }
- 
 
   /**
-   * get all mission from collection "finding_list"
+   * get all mission from collection "discovery_list"
    */
-  async getFindingsOfAMission({ missionID }) {
+  async getDiscoveriesOfAMission({ missionID }) {
     try {
-      const findingList = [];
+      const discoveryList = [];
       const querySnapshot = await this.firestore
-        .collection('findingList').where('missionID', '==', missionID)
+        .collection('discoveryList').where('missionID', '==', missionID)
         .get();
       querySnapshot.forEach(doc => {
-        findingList.push({
+        discoveryList.push({
           id: doc.id,
           ...doc.data(),
         });
       });
-      return findingList;
+      return discoveryList;
     } catch (err) {
       console.log('error: ', err);
       return [];

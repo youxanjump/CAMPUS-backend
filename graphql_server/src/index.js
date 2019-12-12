@@ -1,4 +1,5 @@
-const { ApolloServer } = require('apollo-server');
+const express = require('express');
+const { ApolloServer,} = require('apollo-server-express');
 const admin = require('firebase-admin');
 
 const typeDefs = require('./schema');
@@ -18,6 +19,8 @@ const dataSources = () => ({
   firestoreAPI: new FirestoreAPI({ admin }),
 });
 
+// init express
+const app = express();
 
 const server = new ApolloServer({
   typeDefs,
@@ -35,6 +38,13 @@ const server = new ApolloServer({
   },
 });
 
+server.applyMiddleware({ app, path: '/graphql' });
+
+app.listen({ port: 4001 }, () => {
+  console.log('🎉 Apollo Server on http://localhost:4001/graphql');
+});
+
+/*
 // Start our server if we're not in a test env.
 // if we're in a test env, we'll manually start it in a test
 if (process.env.NODE_ENV !== 'test') {
@@ -49,4 +59,4 @@ module.exports = {
   typeDefs,
   resolvers,
   dataSources,
-};
+};*/
