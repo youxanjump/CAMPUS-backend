@@ -1,0 +1,7 @@
+{
+    "eslint.nodePath": "./node_modules",
+    "eslint.options": {
+        "configFile": "/Users/stvreumi/dev/SmartCampus/graphql_server/.eslintrc.js"
+    },
+    "git.ignoreLimitWarning": true,
+}
