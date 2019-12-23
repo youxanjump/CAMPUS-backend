@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "builds": [{ "src": "nowIndex.js", "use": "@now/node-server" }],
+  "routes": [{ "src": "/.*", "dest": "nowIndex.js" }],
+  "env": {
+    "GOOGLE_APPLICATION_CREDENTIALS": "smartcampus-1b31f-firebase-adminsdk-a3m0r-46dbf554c0.json"
+  }
+}
