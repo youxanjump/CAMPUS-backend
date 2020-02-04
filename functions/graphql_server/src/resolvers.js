@@ -9,12 +9,16 @@ module.exports = {
     discoveryList: async (_, __, { dataSources }) =>
       dataSources.firestoreAPI.getDiscoveryList(),
   },
+  Mutation: {
+    tagUpdate: async (_, { data }, { dataSources }) =>
+      dataSources.firestoreAPI.updateTagData({ data }),
+  },
   Tag: {
     tagDetail: async (tag, _, { dataSources }) =>
       dataSources.firestoreAPI.getTagDetail({ tagID: tag.id }),
     mission: async (tag, _, { dataSources }) =>
       dataSources.firestoreAPI.getMissionById({ id: tag.missionID }),
-    discoveries: async (tag, _, { dataSources }) => 
+    discoveries: async (tag, _, { dataSources }) =>
       dataSources.firestoreAPI.getDiscoveriesById({ ids: tag.discoveryIDs }),
   },
   TagDetail: {
@@ -26,15 +30,20 @@ module.exports = {
       tagDetail.createUserID,
   },
   User: {
-    id: async (userId, _, { dataSources }) =>
+    id: async (userId, _, __) =>
       userId,
+    name: async (userId, _, { dataSources }) =>
+      dataSources.firestoreAPI.getUserName({ uid: userId }),
   },
   Mission: {
     discoveries: async (mission, _, { dataSources }) =>
       dataSources.firestoreAPI.getDiscoveriesOfAMission({ missionID: mission.id }),
   },
+  Discovery: {
+    mission: async (discovery, _, { dataSources }) =>
+      dataSources.firestoreAPI.getMissionById({ id: discovery.missionID }),
+  },
   Coordinate: {
-    //TODO: figure out why it is coordinates rather than tag
     latitude: async (coordinates, _, __) => 
       coordinates.latitude.toString(),
     longitude: async (coordinates, _, __) =>

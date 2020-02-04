@@ -41,8 +41,8 @@ const typeDefs = gql`
   }
 
   type Coordinate {
-    latitude: String
-    longitude: String
+    latitude: String!
+    longitude: String!
   }
 
   type Mission {
@@ -53,8 +53,38 @@ const typeDefs = gql`
 
   type Discovery {
       id: ID!
-      missionID: String
+      mission: Mission
       name: String
+  }
+
+  # mutation
+  type Mutation {
+    tagUpdate(data: TagUpdateInput!): TagUpdateResponse!
+  }
+
+  input TagUpdateInput {
+    id: ID #set null if we want to create new data
+    "true if modifing existing tag; false if creaing new tag"
+    modify: Boolean!
+    title: String
+    accessibility: Float
+    missionID: String
+    discoveryIDs: [String]
+    coordinates: CoordinateInput
+    createUserID: String
+    description: String
+    imageUrl: [String]!
+  }
+
+  input CoordinateInput {
+    latitude: String
+    longitude: String
+  }
+
+  type TagUpdateResponse {
+    success: Boolean!
+    message: String
+    tag: Tag
   }
 `;
 

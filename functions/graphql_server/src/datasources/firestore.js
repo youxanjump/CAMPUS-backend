@@ -8,8 +8,12 @@ class FirestoreAPI extends DataSource {
     super();
 
     // Create a GeoFirestore reference
+    this.admin = admin;
     this.firestore = admin.firestore();
     this.geofirestore = new GeoFirestore(this.firestore);
+
+    // for authentication
+    this.auth = admin.auth();
   }
 
   /**
@@ -165,6 +169,106 @@ class FirestoreAPI extends DataSource {
       return [];
     }
   }
-}
+
+  async getUserName({ uid }) {
+    const { displayName } = await this.auth.getUser(uid);
+    return displayName;
+  }
+
+  // TODO: if id is null, add data, else update data and udptetime
+  // check if user, discovery and task id are existed
+  // TODO: refactor this function...
+  async updateTagData({ data }) {
+    // TODO: add tagData to firebase using geofirestore
+    try {
+      const tagGeoRef = this.geofirestore.collection('tagData');
+      const tagDetailRef = this.firestore.collection('tagDetail');
+      const response = {
+        success: true,
+        message: '',
+        tag: null,
+      };
+      if (!data.modify) {
+        // add new data
+        const {
+          // tag data
+          title,
+          accessibility,
+          missionID,
+          discoveryIDs,
+          coordinates,
+          // tag detail data
+          createUserID,
+          description,
+          imageUrl,
+        } = data;
+        const tagData = {
+          title,
+          accessibility,
+          missionID,
+          discoveryIDs,
+          coordinates:
+            new this.admin.firestore.GeoPoint(
+              parseFloat(coordinates.latitude),
+              parseFloat(coordinates.longitude)
+            ),
+        };
+        // TODO: add tagData to firebase using geofirestore
+        // collection reference
+        //const discoveryListRef = this.firestore.collection('discoveryList');
+        const missionListRef = this.firestore.collection('missionList');
+
+        // validation
+        const refToMissionDoc = await missionListRef.doc(missionID).get();
+        if (!refToMissionDoc.exists) {
+          response.success = false;
+          response.message = `no such missionID: ${missionID}`;
+          return response;
+        }
+        // TODO: how to do validation to an array(discoveryList)
+        // TODO: validate user
+
+        // add tagData to server
+        const refAfterTagAdd = await tagGeoRef.add(tagData);
+
+        // add tagDetail to server
+        const tagDetail = {
+          createTime: this.admin.firestore.FieldValue.serverTimestamp(),
+          lastUpdateTime: this.admin.firestore.FieldValue.serverTimestamp(),
+          createUserID,
+          location: {
+            geoInfo: {
+              type: 'Point',
+              coordinates,
+            },
+          },
+          description: description || '',
+          imageUrl,
+        };
+
+        tagDetailRef.doc(refAfterTagAdd.id).set(tagDetail);
+
+        const afterTagAddSnap = await tagGeoRef
+          .doc(refAfterTagAdd.id).get();
+
+        response.tag = {
+          id: refAfterTagAdd.id,
+          ...afterTagAddSnap.data().d,
+        };
+      } else {
+        // update existed data
+        response.success = false;
+        response.message = 'currently can not update data on the firestore';
+      }
+      return response;
+    } catch (err) {
+      return {
+        success: false,
+        message: err,
+        tag: null,
+      };
+    }
+  }// function async updateTagData
+} // class FirestoreAPI
 
 module.exports = FirestoreAPI;
