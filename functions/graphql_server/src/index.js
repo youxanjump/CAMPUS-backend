@@ -5,8 +5,6 @@ const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
 const FirestoreAPI = require('./datasources/firestore');
 
-
-
 function apolloServer({ admin }) {
   // init express
   const app = express();
@@ -23,12 +21,18 @@ function apolloServer({ admin }) {
       console.log('error');
       console.log(error);
       return error;
-    },
+    },/*
+    context: async ({ req }) => {
+      const loginUser = await dataSources.firestoreAPI.getToken(req);
+      return {
+        loginUser,
+      };
+    },*/
     introspection: true, // enables introspection of the schema
     playground: true, // enables the actual playground
   });
 
-  server.applyMiddleware({ app, path: '/' });
+  server.applyMiddleware({ app, path: '/graphql' });
   return app;
 }
 
