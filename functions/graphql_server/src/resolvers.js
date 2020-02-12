@@ -1,3 +1,10 @@
+const { combineResolvers } = require('graphql-resolvers');
+
+const { 
+  isAuthenticated,
+  isTagOwner,
+} = require('./authorization');
+
 module.exports = {
   Query: {
     tagRenderList: async (_, __, { dataSources }) =>
@@ -10,8 +17,13 @@ module.exports = {
       dataSources.firestoreAPI.getDiscoveryList(),
   },
   Mutation: {
-    tagUpdate: async (_, { data }, { dataSources }) =>
-      dataSources.firestoreAPI.updateTagData({ data }),
+    tagUpdate: combineResolvers(
+      isAuthenticated,
+      isTagOwner,
+      async (_, { data }, { dataSources, me }) => {
+        return dataSources.firestoreAPI.updateTagData({ data, me });
+      },
+    ),
   },
   Tag: {
     tagDetail: async (tag, _, { dataSources }) =>

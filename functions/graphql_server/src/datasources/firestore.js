@@ -1,5 +1,5 @@
 const { DataSource } = require('apollo-datasource');
-
+const { AuthenticationError } = require('apollo-server-express');
 // geofirestore
 const { GeoFirestore } = require('geofirestore');
 
@@ -24,6 +24,29 @@ class FirestoreAPI extends DataSource {
    */
   initialize(config) {
     this.context = config.context;
+  }
+
+  /**
+   * Authentication
+   */
+
+  /**
+   * get token from reqeust header and verify
+   * @param {object} - request
+   * @returns {DecodedIdToken} - have `uid` properity which specify
+   *  the uid of the user.
+   */
+  async getToken(req) {
+    const { authorization } = req.headers;
+
+    if (authorization) {
+      const token = authorization.replace('Bearer ', '');
+      try {
+        return await this.auth.verifyIdToken(token);
+      } catch (e) {
+        throw new AuthenticationError(e);
+      }
+    }
   }
 
   /**
@@ -73,6 +96,22 @@ class FirestoreAPI extends DataSource {
     return {
       tagID: doc.id,
       ...doc.data(),
+    };
+  }
+
+  /**
+   * get tag createUser"
+   * @param {string} tagID - tagID of the document with detailed info.
+   */
+  async getTagCreateUser({ tagID }) {
+    const doc = await this.firestore
+      .collection('tagDetail').doc(tagID).get();
+    if (!doc.exists) {
+      return null;
+    }
+    return {
+      tagID: doc.id,
+      createUser: doc.data().createUser,
     };
   }
 
@@ -177,8 +216,9 @@ class FirestoreAPI extends DataSource {
 
   // TODO: if id is null, add data, else update data and udptetime
   // check if user, discovery and task id are existed
-  // TODO: refactor this function...
-  async updateTagData({ data }) {
+  // TODO: refactor this function. Extract the verification process
+  // to resolver
+  async updateTagData({ data, me }) {
     // TODO: add tagData to firebase using geofirestore
     try {
       const tagGeoRef = this.geofirestore.collection('tagData');
@@ -198,7 +238,6 @@ class FirestoreAPI extends DataSource {
           discoveryIDs,
           coordinates,
           // tag detail data
-          createUserID,
           description,
           imageUrl,
         } = data;
@@ -235,7 +274,7 @@ class FirestoreAPI extends DataSource {
         const tagDetail = {
           createTime: this.admin.firestore.FieldValue.serverTimestamp(),
           lastUpdateTime: this.admin.firestore.FieldValue.serverTimestamp(),
-          createUserID,
+          createUserID: me.uid,
           location: {
             geoInfo: {
               type: 'Point',
@@ -260,6 +299,7 @@ class FirestoreAPI extends DataSource {
         response.success = false;
         response.message = 'currently can not update data on the firestore';
       }
+      response.message = 'Add data successfully.';
       return response;
     } catch (err) {
       return {

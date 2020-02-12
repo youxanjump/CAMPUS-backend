@@ -34,6 +34,7 @@ const typeDefs = gql`
   type User{
     id: ID!
     name: String
+    email: String
   }
 
   type Location {
@@ -71,7 +72,6 @@ const typeDefs = gql`
     missionID: String
     discoveryIDs: [String]
     coordinates: CoordinateInput
-    createUserID: String
     description: String
     imageUrl: [String]!
   }

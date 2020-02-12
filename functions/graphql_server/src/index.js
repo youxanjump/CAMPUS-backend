@@ -21,13 +21,13 @@ function apolloServer({ admin }) {
       console.log('error');
       console.log(error);
       return error;
-    },/*
+    },
     context: async ({ req }) => {
-      const loginUser = await dataSources.firestoreAPI.getToken(req);
+      const me = await dataSources().firestoreAPI.getToken(req);
       return {
-        loginUser,
+        me,
       };
-    },*/
+    },
     introspection: true, // enables introspection of the schema
     playground: true, // enables the actual playground
   });
