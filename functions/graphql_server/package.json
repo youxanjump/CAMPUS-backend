@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "localstart": "nodemon localIndex.js",
-    "docs": "./node_modules/.bin/jsdoc -c jsdoc.js"
+    "docs": "./node_modules/.bin/jsdoc2md -f ./src/* ./src/datasources/* localIndex.js > ./docs/graphql.md"
   },
   "keywords": [],
   "author": "",
@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "eslint": "^6.7.1",
-    "jsdoc": "^3.6.3",
+    "jsdoc-to-markdown": "^5.0.3",
     "nodemon": "^2.0.2"
   }
 }
