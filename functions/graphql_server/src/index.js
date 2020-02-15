@@ -1,16 +1,22 @@
+/** @module src/index */
 const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
 
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
-const FirestoreAPI = require('./datasources/firestore');
+const FirebaseAPI = require('./datasources/firebase');
 
+/**
+ * Apollo server instance
+ * @param {object} {admin} firebase admin SDK
+ * @returns {Express} express server instance running apollo graphql server 
+ */
 function apolloServer({ admin }) {
   // init express
   const app = express();
 
   const dataSources = () => ({
-    firestoreAPI: new FirestoreAPI({ admin }),
+    firebaseAPI: new FirebaseAPI({ admin }),
   });
 
   const server = new ApolloServer({
@@ -23,7 +29,7 @@ function apolloServer({ admin }) {
       return error;
     },
     context: async ({ req }) => {
-      const me = await dataSources().firestoreAPI.getToken(req);
+      const me = await dataSources().firebaseAPI.getToken(req);
       return {
         me,
       };

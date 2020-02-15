@@ -7,7 +7,7 @@ const { skip } = require('graphql-resolvers');
  * Use `combineResolvers` in `graphql-resolvers` to combine
  * with other resolvers.
  * @todo Understand why returning error instance will work.
- * reference: 
+ * reference:
  * https://www.apollographql.com/docs/graphql-tools/resolvers/#graphql-resolvers
  * https://www.robinwieruch.de/graphql-apollo-server-tutorial#authorization-with-graphql-and-apollo-server
  * @returns {undefined} skip, go to executute next resolvers.

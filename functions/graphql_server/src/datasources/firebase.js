@@ -1,3 +1,4 @@
+/** @module Firebase */
 const { DataSource } = require('apollo-datasource');
 const { AuthenticationError } = require('apollo-server-express');
 // geofirestore
@@ -5,12 +6,13 @@ const { GeoFirestore } = require('geofirestore');
 
 /** Handle action with firebase
  *  @todo Rewrite this class name
- *  @todo refactor 
+ *  @todo refactor
  */
-class FirestoreAPI extends DataSource {
+class FirebaseAPI extends DataSource {
   /**
    * Use admin to construct necessary entity of communication
-   * @param {object} {admin} firebase admin config
+   * @param {object} param
+   * @param {object} param.admin firebase admin config
    */
   constructor({ admin }) {
     super();
@@ -40,6 +42,7 @@ class FirestoreAPI extends DataSource {
 
   /**
    * get token from reqeust header and verify
+   * @async
    * @param {object} - request
    * @returns {DecodedIdToken} - have `uid` properity which specify
    *  the uid of the user.
@@ -58,29 +61,30 @@ class FirestoreAPI extends DataSource {
   }
 
   /**
-   * get all objects from specific collection
-   * @param {string} collectionName - Collection name of firestore.
+   * Get all objects from specific collection.
+   * @async
+   * @param {string} collectionName Collection name of firestore.
+   * @returns {object[]} Array of document data in the collection `collectionName`
    */
   async getList(collectionName) {
     const list = [];
-    try {
-      const querySnapshot = await this.firestore.collection(collectionName).get();
-      querySnapshot.forEach(doc => {
-        const data = doc.data();
-        list.push({
-          id: doc.id,
-          ...data,
-        });
+    const querySnapshot = await this.firestore.collection(collectionName).get();
+    querySnapshot.forEach(doc => {
+      const data = doc.data();
+      list.push({
+        id: doc.id,
+        ...data,
       });
-      return list;
-    } catch (err) {
-      console.log(collectionName, ' error: ', err);
-      return [];
-    }
+    });
+    return list;
   }
 
   /**
-   * get all tags from collection "tag_data"
+   * Geofirestore will store not geo-related data in field `d`.
+   * This function get field `d` data from collection `tagData`
+   * @async
+   * @returns {object} Object with id and `d` unpacked data of document
+   * in collection `tagData`
    */
   async getTagList() {
     const tagList = await this.getList('tagData');
@@ -92,8 +96,11 @@ class FirestoreAPI extends DataSource {
   }
 
   /**
-   * get tag detail from collection "tag_detail"
-   * @param {string} tagID - tagID of the document with detailed info.
+   * get tag detail from collection `tag_detail`
+   * @async
+   * @param {object} param
+   * @param {string} param.tagID tagID of the document with detailed info.
+   * @returns {object|null} Object of document data in collection `tagDetail`
    */
   async getTagDetail({ tagID }) {
     const doc = await this.firestore
@@ -108,113 +115,82 @@ class FirestoreAPI extends DataSource {
   }
 
   /**
-   * get tag createUser"
-   * @param {string} tagID - tagID of the document with detailed info.
-   */
-  async getTagCreateUser({ tagID }) {
-    const doc = await this.firestore
-      .collection('tagDetail').doc(tagID).get();
-    if (!doc.exists) {
-      return null;
-    }
-    return {
-      tagID: doc.id,
-      createUser: doc.data().createUser,
-    };
-  }
-
-  /**
-   * get all mission from collection "mission_list"
-   */
-  async getMissionList() {
-    const missionList = await this.getList('missionList');
-    return missionList;
-  }
-
-  /**
    * get mission detail with specific id
+   * @async
+   * @param {object} param
+   * @param {string} param.id get mission data of the id
+   * @returns {missionObject} mission data
    */
   async getMissionById({ id }) {
     let mission = {};
-    try {
-      const docRef = this.firestore
-        .collection('missionList').doc(id);
-      const doc = await docRef.get();
-      if (!doc.exists) {
-        console.log(`can't get document: ${id}`);
-        mission = { message: `no such document: ${id}` };
-      }
-      mission = {
-        id: doc.id,
-        ...doc.data(),
-      };
-    } catch (err) {
-      console.log(`can't get document: ${id}, ${err} `);
+    const docRef = this.firestore
+      .collection('missionList').doc(id);
+    const doc = await docRef.get();
+    if (!doc.exists) {
+      throw new Error(`can't get document: ${id}`);
     }
+    mission = {
+      id: doc.id,
+      ...doc.data(),
+    };
+
     return mission;
   }
 
   /**
-   * get all mission from collection "discovery_list"
-   */
-  async getDiscoveryList() {
-    const discoveryList = await this.getList('discoveryList');
-    return discoveryList;
-  }
-
-  /**
    * get discovery detail with specific id
+   * @async
+   * @param {object} param
+   * @param {string[]} param.ids Array of discovery id
+   * @returns {discoveryObject[]} Array of discovery data
    */
   async getDiscoveriesById({ ids }) {
     let discoveryList = {};
-    try {
-      const docRefList = ids.map(id => ({
-        id,
-        docSnap: this.firestore
-          .collection('discoveryList').doc(id),
-      }));
-      const discoveriesAsync = docRefList.map(async ({ id, docSnap }) => {
-        let discovery = {};
-        const doc = await docSnap.get();
-        if (!doc.exists) {
-          console.log(`can't get document: ${id}`);
-          discovery = { message: `no such document: ${id}` };
-          return discovery;
-        }
-        discovery = {
-          id: doc.id,
-          ...doc.data(),
-        };
-        return discovery;
-      });
-      discoveryList = await Promise.all(discoveriesAsync);
-      console.log(discoveryList);
-    } catch (err) {
-      console.log(`${err} `);
-    }
+    const docRefList = ids.map(id => ({
+      id,
+      docSnap: this.firestore
+        .collection('discoveryList').doc(id),
+    }));
+    const discoveriesAsync = docRefList.map(async ({ id, docSnap }) => {
+      let discovery = {};
+      const doc = await docSnap.get();
+      if (!doc.exists) {
+        throw new Error(`can't get document: ${id}`);
+      }
+      discovery = {
+        id: doc.id,
+        ...doc.data(),
+      };
+      return discovery;
+    }); // discoveriesAsync
+
+    discoveryList = await Promise.all(discoveriesAsync);
+
     return discoveryList;
   }
 
   /**
-   * get all mission from collection "discovery_list"
+   * get all discovery belong to specific mission
+   * from collection `discoveryList`.
+   * @async
+   * @param {object} param
+   * @param {string} param.missionID
+   * @returns {discoveryObject[]}
+   * 
    */
   async getDiscoveriesOfAMission({ missionID }) {
-    try {
-      const discoveryList = [];
-      const querySnapshot = await this.firestore
-        .collection('discoveryList').where('missionID', '==', missionID)
-        .get();
-      querySnapshot.forEach(doc => {
-        discoveryList.push({
-          id: doc.id,
-          ...doc.data(),
-        });
+    const discoveryList = [];
+    const querySnapshot = await this.firestore
+      .collection('discoveryList').where('missionID', '==', missionID)
+      .get();
+    querySnapshot.forEach(doc => {
+      discoveryList.push({
+        id: doc.id,
+        ...doc.data(),
       });
-      return discoveryList;
-    } catch (err) {
-      console.log('error: ', err);
-      return [];
-    }
+    });
+
+    return discoveryList;
   }
 
   async getUserName({ uid }) {
@@ -226,6 +202,14 @@ class FirestoreAPI extends DataSource {
   // check if user, discovery and task id are existed
   // TODO: refactor this function. Extract the verification process
   // to resolver
+  /**
+   * Add or update tag data. Currently not implement updata function.
+   * @param {object} param
+   * @param {TagUpdateInputObject} param.data `TagUpdateInput` data
+   * @param {DecodedIdToken} param.me have `uid` properity which specify
+   *  the uid of the user.
+   * @returns {TagUpdateResponseObject} Contain the message of this operation
+   */
   async updateTagData({ data, me }) {
     // TODO: add tagData to firebase using geofirestore
     try {
@@ -317,6 +301,6 @@ class FirestoreAPI extends DataSource {
       };
     }
   }// function async updateTagData
-} // class FirestoreAPI
+} // class FirebaseAPI
 
-module.exports = FirestoreAPI;
+module.exports = FirebaseAPI;
