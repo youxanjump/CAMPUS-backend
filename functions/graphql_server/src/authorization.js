@@ -6,11 +6,10 @@ const { skip } = require('graphql-resolvers');
  * A resover. Check if user is authorized.
  * Use `combineResolvers` in `graphql-resolvers` to combine
  * with other resolvers.
- * @todo Understand why returning error instance will work.
- * reference:
- * https://www.apollographql.com/docs/graphql-tools/resolvers/#graphql-resolvers
- * https://www.robinwieruch.de/graphql-apollo-server-tutorial#authorization-with-graphql-and-apollo-server
- * @returns {undefined} skip, go to executute next resolvers.
+ * `combineResolvers`: combine a sequence of resolver.
+ * If it return `skip`(`undefined`), go to next resolver.
+ * Otherwise, the resolver return and ignore all the other resolvers.
+ * @returns {undefined|ForbiddenError} skip, go to executute next resolvers.
  * If not login, return ForbiddenError forbid not login users
  */
 module.exports.isAuthenticated = (_, __, { me }) =>
@@ -20,6 +19,9 @@ module.exports.isAuthenticated = (_, __, { me }) =>
  * A resover. If user want to modify the tag, check if user is the tag Owner.
  * Use `combineResolvers` in `graphql-resolvers` to combine
  * with other resolvers.
+ * `combineResolvers`: combine a sequence of resolver.
+ * If it return `skip`(`undefined`), go to next resolver.
+ * Otherwise, the resolver return and ignore all the other resolvers.
  * @returns {undefined} skip, go to executute next resolvers
  * @throws {ForbiddenError} forbid not authorize users
  */

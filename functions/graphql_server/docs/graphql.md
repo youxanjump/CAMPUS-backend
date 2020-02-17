@@ -14,32 +14,31 @@
 ## authorization
 
 * [authorization](#module_authorization)
-    * [.isAuthenticated()](#module_authorization.isAuthenticated) ⇒ <code>undefined</code>
+    * [.isAuthenticated()](#module_authorization.isAuthenticated) ⇒ <code>undefined</code> \| <code>ForbiddenError</code>
     * [.isTagOwner()](#module_authorization.isTagOwner) ⇒ <code>undefined</code>
 
 <a name="module_authorization.isAuthenticated"></a>
 
-### authorization.isAuthenticated() ⇒ <code>undefined</code>
+### authorization.isAuthenticated() ⇒ <code>undefined</code> \| <code>ForbiddenError</code>
 A resover. Check if user is authorized.
 Use `combineResolvers` in `graphql-resolvers` to combine
 with other resolvers.
+`combineResolvers`: combine a sequence of resolver.
+If it return `skip`(`undefined`), go to next resolver.
+Otherwise, the resolver return and ignore all the other resolvers.
 
 **Kind**: static method of [<code>authorization</code>](#module_authorization)  
-**Returns**: <code>undefined</code> - skip, go to executute next resolvers.
+**Returns**: <code>undefined</code> \| <code>ForbiddenError</code> - skip, go to executute next resolvers.
 If not login, return ForbiddenError forbid not login users  
-**Todo**
-
-- [ ] Understand why returning error instance will work.
-reference:
-https://www.apollographql.com/docs/graphql-tools/resolvers/#graphql-resolvers
-https://www.robinwieruch.de/graphql-apollo-server-tutorial#authorization-with-graphql-and-apollo-server
-
 <a name="module_authorization.isTagOwner"></a>
 
 ### authorization.isTagOwner() ⇒ <code>undefined</code>
 A resover. If user want to modify the tag, check if user is the tag Owner.
 Use `combineResolvers` in `graphql-resolvers` to combine
 with other resolvers.
+`combineResolvers`: combine a sequence of resolver.
+If it return `skip`(`undefined`), go to next resolver.
+Otherwise, the resolver return and ignore all the other resolvers.
 
 **Kind**: static method of [<code>authorization</code>](#module_authorization)  
 **Returns**: <code>undefined</code> - skip, go to executute next resolvers  
