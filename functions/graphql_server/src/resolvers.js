@@ -17,11 +17,11 @@ module.exports = {
       dataSources.firebaseAPI.getList('discoveryList'),
   },
   Mutation: {
-    tagUpdate: combineResolvers(
+    addNewTagData: combineResolvers(
       isAuthenticated,
       isTagOwner,
       async (_, { data }, { dataSources, me }) => {
-        return dataSources.firebaseAPI.updateTagData({ data, me });
+        return dataSources.firebaseAPI.addNewTagData({ data, me });
       },
     ),
   },

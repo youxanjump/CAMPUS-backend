@@ -58,6 +58,7 @@ class FirebaseAPI extends DataSource {
         throw new AuthenticationError(e);
       }
     }
+    throw new AuthenticationError('no authorization info in header');
   }
 
   /**
@@ -88,9 +89,7 @@ class FirebaseAPI extends DataSource {
    */
   async getTagList() {
     const tagList = await this.getList('tagData');
-    const unpackTagList = tagList.map(({ id, d }) => (
-      { id, ...d }
-    ));
+    const unpackTagList = tagList.map(({ id, d }) => ({ id, ...d }));
 
     return unpackTagList;
   }
@@ -104,7 +103,9 @@ class FirebaseAPI extends DataSource {
    */
   async getTagDetail({ tagID }) {
     const doc = await this.firestore
-      .collection('tagDetail').doc(tagID).get();
+      .collection('tagDetail')
+      .doc(tagID)
+      .get();
     if (!doc.exists) {
       return null;
     }
@@ -123,8 +124,7 @@ class FirebaseAPI extends DataSource {
    */
   async getMissionById({ id }) {
     let mission = {};
-    const docRef = this.firestore
-      .collection('missionList').doc(id);
+    const docRef = this.firestore.collection('missionList').doc(id);
     const doc = await docRef.get();
     if (!doc.exists) {
       throw new Error(`can't get document: ${id}`);
@@ -148,8 +148,7 @@ class FirebaseAPI extends DataSource {
     let discoveryList = {};
     const docRefList = ids.map(id => ({
       id,
-      docSnap: this.firestore
-        .collection('discoveryList').doc(id),
+      docSnap: this.firestore.collection('discoveryList').doc(id),
     }));
     const discoveriesAsync = docRefList.map(async ({ id, docSnap }) => {
       let discovery = {};
@@ -176,12 +175,13 @@ class FirebaseAPI extends DataSource {
    * @param {object} param
    * @param {string} param.missionID
    * @returns {discoveryObject[]}
-   * 
+   *
    */
   async getDiscoveriesOfAMission({ missionID }) {
     const discoveryList = [];
     const querySnapshot = await this.firestore
-      .collection('discoveryList').where('missionID', '==', missionID)
+      .collection('discoveryList')
+      .where('missionID', '==', missionID)
       .get();
     querySnapshot.forEach(doc => {
       discoveryList.push({
@@ -205,102 +205,77 @@ class FirebaseAPI extends DataSource {
   /**
    * Add or update tag data. Currently not implement updata function.
    * @param {object} param
-   * @param {TagUpdateInputObject} param.data `TagUpdateInput` data
+   * @param {AddNewTagDataInputObject} param.data `AddNewTagDataInput` data
    * @param {DecodedIdToken} param.me have `uid` properity which specify
    *  the uid of the user.
-   * @returns {TagUpdateResponseObject} Contain the message of this operation
+   * @returns {TagObject} Contain the message of this operation
    */
-  async updateTagData({ data, me }) {
+  async addNewTagData({ data, me }) {
     // TODO: add tagData to firebase using geofirestore
     try {
       const tagGeoRef = this.geofirestore.collection('tagData');
       const tagDetailRef = this.firestore.collection('tagDetail');
-      const response = {
-        success: true,
-        message: '',
-        tag: null,
+      const missionListRef = this.firestore.collection('missionList');
+
+      const {
+        // tag data
+        title,
+        accessibility,
+        missionID,
+        discoveryIDs,
+        coordinates,
+        // tag detail data
+        description,
+      } = data;
+
+      const tagData = {
+        title,
+        accessibility,
+        missionID,
+        discoveryIDs,
+        coordinates: new this.admin.firestore.GeoPoint(
+          parseFloat(coordinates.latitude),
+          parseFloat(coordinates.longitude)
+        ),
       };
-      if (!data.modify) {
-        // add new data
-        const {
-          // tag data
-          title,
-          accessibility,
-          missionID,
-          discoveryIDs,
-          coordinates,
-          // tag detail data
-          description,
-          imageUrl,
-        } = data;
-        const tagData = {
-          title,
-          accessibility,
-          missionID,
-          discoveryIDs,
-          coordinates:
-            new this.admin.firestore.GeoPoint(
-              parseFloat(coordinates.latitude),
-              parseFloat(coordinates.longitude)
-            ),
-        };
-        // TODO: add tagData to firebase using geofirestore
-        // collection reference
-        //const discoveryListRef = this.firestore.collection('discoveryList');
-        const missionListRef = this.firestore.collection('missionList');
 
-        // validation
-        const refToMissionDoc = await missionListRef.doc(missionID).get();
-        if (!refToMissionDoc.exists) {
-          response.success = false;
-          response.message = `no such missionID: ${missionID}`;
-          return response;
-        }
-        // TODO: how to do validation to an array(discoveryList)
-        // TODO: validate user
-
-        // add tagData to server
-        const refAfterTagAdd = await tagGeoRef.add(tagData);
-
-        // add tagDetail to server
-        const tagDetail = {
-          createTime: this.admin.firestore.FieldValue.serverTimestamp(),
-          lastUpdateTime: this.admin.firestore.FieldValue.serverTimestamp(),
-          createUserID: me.uid,
-          location: {
-            geoInfo: {
-              type: 'Point',
-              coordinates,
-            },
+      const tagDetail = {
+        createTime: this.admin.firestore.FieldValue.serverTimestamp(),
+        lastUpdateTime: this.admin.firestore.FieldValue.serverTimestamp(),
+        createUserID: me.uid,
+        location: {
+          geoInfo: {
+            type: 'Point',
+            coordinates,
           },
-          description: description || '',
-          imageUrl,
-        };
-
-        tagDetailRef.doc(refAfterTagAdd.id).set(tagDetail);
-
-        const afterTagAddSnap = await tagGeoRef
-          .doc(refAfterTagAdd.id).get();
-
-        response.tag = {
-          id: refAfterTagAdd.id,
-          ...afterTagAddSnap.data().d,
-        };
-      } else {
-        // update existed data
-        response.success = false;
-        response.message = 'currently can not update data on the firestore';
-      }
-      response.message = 'Add data successfully.';
-      return response;
-    } catch (err) {
-      return {
-        success: false,
-        message: err,
-        tag: null,
+        },
+        description: description || '',
       };
+
+      // validation
+      const refToMissionDoc = await missionListRef.doc(missionID).get();
+      if (!refToMissionDoc.exists) {
+        return null;
+      }
+      // TODO: how to do validation to an array(discoveryList)
+      // TODO: validate user
+
+      // add tagData to server
+      const refAfterTagAdd = await tagGeoRef.add(tagData);
+
+      // add tagDetail to server
+      tagDetailRef.doc(refAfterTagAdd.id).set(tagDetail);
+
+      // get tag snapshot data and return
+      const afterTagAddSnap = await tagGeoRef.doc(refAfterTagAdd.id).get();
+      return {
+        id: refAfterTagAdd.id,
+        ...afterTagAddSnap.data().d,
+      };
+    } catch (err) {
+      return null;
     }
-  }// function async updateTagData
+  } // function async updateTagData
 } // class FirebaseAPI
 
 module.exports = FirebaseAPI;

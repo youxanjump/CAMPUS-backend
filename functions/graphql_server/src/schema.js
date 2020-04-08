@@ -60,11 +60,14 @@ const typeDefs = gql`
 
   # mutation
   type Mutation {
-    tagUpdate(data: TagUpdateInput!): TagUpdateResponse!
+    #tagUpdate(data: TagUpdateInput!): TagUpdateResponse!
+    #tagImageUrlAdd(id: ID, imageUrl: [String]!): TagDetail!
+    addNewTagData(data: AddNewTagDataInput!): Tag
   }
 
   input TagUpdateInput {
-    id: ID #set null if we want to create new data
+    "set null if we want to create new data"
+    id: ID
     "true if modifing existing tag; false if creaing new tag"
     modify: Boolean!
     title: String
@@ -73,18 +76,21 @@ const typeDefs = gql`
     discoveryIDs: [String]
     coordinates: CoordinateInput
     description: String
-    imageUrl: [String]!
+  }
+
+  input AddNewTagDataInput {
+    title: String
+    accessibility: Float
+    missionID: String
+    discoveryIDs: [String]
+    coordinates: CoordinateInput
+    description: String
+    photoNumber: Integer
   }
 
   input CoordinateInput {
     latitude: String
     longitude: String
-  }
-
-  type TagUpdateResponse {
-    success: Boolean!
-    message: String
-    tag: Tag
   }
 `;
 
