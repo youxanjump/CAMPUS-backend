@@ -18,8 +18,8 @@ module.exports = {
   },
   Mutation: {
     addNewTagData: combineResolvers(
-      isAuthenticated,
-      isTagOwner,
+      //isAuthenticated,
+      //isTagOwner,
       async (_, { data }, { dataSources, me }) => {
         return dataSources.firebaseAPI.addNewTagData({ data, me });
       },

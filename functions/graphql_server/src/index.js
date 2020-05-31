@@ -28,12 +28,12 @@ function apolloServer({ admin }) {
       console.log(error);
       return error;
     },
-    context: async ({ req }) => {
+    /*context: async ({ req }) => {
       const me = await dataSources().firebaseAPI.getToken(req);
       return {
         me,
       };
-    },
+    },*/
     introspection: true, // enables introspection of the schema
     playground: true, // enables the actual playground
   });

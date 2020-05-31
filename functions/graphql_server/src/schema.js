@@ -85,7 +85,7 @@ const typeDefs = gql`
     discoveryIDs: [String]
     coordinates: CoordinateInput
     description: String
-    photoNumber: Integer
+    photoNumber: Int
   }
 
   input CoordinateInput {
