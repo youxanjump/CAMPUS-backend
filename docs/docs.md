@@ -6,6 +6,11 @@
 https://hackmd.io/c/tutorials-tw/%2Fs%2Flink-with-github-tw
 
 ## Running Docs Server Locally
+- If you start up the local server in the first time, you need to install the necessary packages.  
+  In the directory `docs`, running the following command:
+  ```
+  npm install
+  ```
 - In the directory `docs`, run the following command:
   ```bash
   npm run serve
