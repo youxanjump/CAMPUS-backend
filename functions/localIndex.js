@@ -5,6 +5,7 @@ const { express: voyagerMiddleware } = require('graphql-voyager/middleware');
 
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
+  storageBucket: 'smartcampus-1b31f.appspot.com',
 });
 
 const apolloServer = require('./src');

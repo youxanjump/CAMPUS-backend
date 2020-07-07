@@ -62,7 +62,13 @@ const typeDefs = gql`
   type Mutation {
     #tagUpdate(data: TagUpdateInput!): TagUpdateResponse!
     #tagImageUrlAdd(id: ID, imageUrl: [String]!): TagDetail!
-    addNewTagData(data: AddNewTagDataInput!): Tag
+    addNewTagData(data: AddNewTagDataInput!): TagImageUpload
+  }
+
+  type TagImageUpload {
+    tag: Tag!
+    imageNumber: Int!
+    imageUploadUrl: [String]!
   }
 
   input TagUpdateInput {
@@ -85,7 +91,7 @@ const typeDefs = gql`
     discoveryIDs: [String]
     coordinates: CoordinateInput
     description: String
-    photoNumber: Int
+    imageNumber: Int
   }
 
   input CoordinateInput {

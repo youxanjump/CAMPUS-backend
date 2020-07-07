@@ -3,6 +3,8 @@ const { DataSource } = require('apollo-datasource');
 const { AuthenticationError } = require('apollo-server-express');
 // geofirestore
 const { GeoFirestore } = require('geofirestore');
+// firebaseUtil
+const { getImageUploadUrls } = require('./firebaseUtils')
 
 /** Handle action with firebase
  *  @todo Rewrite this class name
@@ -24,6 +26,9 @@ class FirebaseAPI extends DataSource {
 
     // for authentication
     this.auth = admin.auth();
+
+    // for storage bucket
+    this.bucket = admin.storage().bucket();
   }
 
   /**
@@ -193,6 +198,11 @@ class FirebaseAPI extends DataSource {
     return discoveryList;
   }
 
+  /**
+   * Get user's name from uid
+   * @param {uid} the uid of the user
+   * @returns {string} user's name of the uid
+   */
   async getUserName({ uid }) {
     const { displayName } = await this.auth.getUser(uid);
     return displayName;
@@ -208,7 +218,8 @@ class FirebaseAPI extends DataSource {
    * @param {AddNewTagDataInputObject} param.data `AddNewTagDataInput` data
    * @param {DecodedIdToken} param.me have `uid` properity which specify
    *  the uid of the user.
-   * @returns {TagObject} Contain the message of this operation
+   * @returns {TagImageUpload} Contain the upload tag information, and image 
+   *  upload Urls.
    */
   async addNewTagData({ data, me }) {
     // TODO: add tagData to firebase using geofirestore
@@ -226,6 +237,8 @@ class FirebaseAPI extends DataSource {
         coordinates,
         // tag detail data
         description,
+        // number of uploading images
+        imageNumber,
       } = data;
 
       const tagData = {
@@ -242,7 +255,7 @@ class FirebaseAPI extends DataSource {
       const tagDetail = {
         createTime: this.admin.firestore.FieldValue.serverTimestamp(),
         lastUpdateTime: this.admin.firestore.FieldValue.serverTimestamp(),
-        createUserID: me.uid,
+        createUserID: 'test',
         location: {
           geoInfo: {
             type: 'Point',
@@ -255,7 +268,8 @@ class FirebaseAPI extends DataSource {
       // validation
       const refToMissionDoc = await missionListRef.doc(missionID).get();
       if (!refToMissionDoc.exists) {
-        return null;
+        //return null;
+        throw Error(`the mission id ${missionID} does not exist.`)
       }
       // TODO: how to do validation to an array(discoveryList)
       // TODO: validate user
@@ -268,12 +282,20 @@ class FirebaseAPI extends DataSource {
 
       // get tag snapshot data and return
       const afterTagAddSnap = await tagGeoRef.doc(refAfterTagAdd.id).get();
-      return {
+      const tagDataAfterUpload =  {
         id: refAfterTagAdd.id,
         ...afterTagAddSnap.data().d,
       };
+      
+      return {
+        tag: tagDataAfterUpload,
+        imageNumber,
+        imageUploadUrl: 
+          await Promise.all(getImageUploadUrls(this.bucket, imageNumber, refAfterTagAdd.id)),
+      }
     } catch (err) {
-      return null;
+      //return null;
+      throw err;
     }
   } // function async updateTagData
 } // class FirebaseAPI

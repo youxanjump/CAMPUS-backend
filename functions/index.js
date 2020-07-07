@@ -7,7 +7,7 @@ const admin = require('firebase-admin');
 admin.initializeApp();
 
 const { express: voyagerMiddleware } = require('graphql-voyager/middleware');
-const apolloServer = require('./graphql_server/src');
+const apolloServer = require('./src');
 
 console.log('hello');
 
