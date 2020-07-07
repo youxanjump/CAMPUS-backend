@@ -14,7 +14,6 @@ admin.initializeApp({
   databaseURL: firestoreURL,
 });
 
-
 // Create a GeoFirestore reference
 const firestore = admin.firestore();
 const geofirestore = new GeoFirestore(firestore);
@@ -35,15 +34,17 @@ async function missionInit() {
   const missionListRef = firestore.collection('missionList');
 
   // add mission list to firestore mission_list collection
-  await Promise.all(toyMissionList.map(async (element) => {
-    const ref = await missionListRef.add(element);
-    console.log('update: ', element);
-    //console.log(ref.id);
-    if (element.name === '道路障礙') {
-      console.log(ref.id);
-      await discoveryInit(ref.id);
-    }
-  }));
+  await Promise.all(
+    toyMissionList.map(async (element) => {
+      const ref = await missionListRef.add(element);
+      console.log('update: ', element);
+      //console.log(ref.id);
+      if (element.name === '道路障礙') {
+        console.log(ref.id);
+        await discoveryInit(ref.id);
+      }
+    })
+  );
 }
 
 async function discoveryInit(ObstacleMissionID) {
@@ -62,18 +63,19 @@ async function discoveryInit(ObstacleMissionID) {
   const discoveryListRef = firestore.collection('discoveryList');
 
   // add mission list to firestore mission_list collection
-  await Promise.all(toyDiscoveryList.map(async (element) => {
-    await discoveryListRef.add(element);
-    console.log('update: ', element);
-  }));
+  await Promise.all(
+    toyDiscoveryList.map(async (element) => {
+      await discoveryListRef.add(element);
+      console.log('update: ', element);
+    })
+  );
 }
-
 
 async function getList(collectionName) {
   const list = {};
   try {
     const querySnapshot = await firestore.collection(collectionName).get();
-    querySnapshot.forEach(doc => {
+    querySnapshot.forEach((doc) => {
       const data = doc.data();
       list[data.name] = {
         id: doc.id,
@@ -104,7 +106,10 @@ async function updateToyExample() {
       accessibility: 3.0, // from 1.0 to 5.0 rating
       missionID: missionList['無障礙設施'].id,
       discoveryIDs: [discoveryList['下雨濕滑'].id],
-      coordinates: new admin.firestore.GeoPoint(24.786671229129603, 120.99745541810988),
+      coordinates: new admin.firestore.GeoPoint(
+        24.786671229129603,
+        120.99745541810988
+      ),
       // (latitude, longitude)
     };
 
@@ -119,7 +124,7 @@ async function updateToyExample() {
         geoInfo: {
           // specific format of geojson
           type: 'Point',
-          coordinates: ['120.99745541810988', '24.786671229129603']
+          coordinates: ['120.99745541810988', '24.786671229129603'],
           // (longitude, latitude)
         },
       },

@@ -1,9 +1,6 @@
 const { combineResolvers } = require('graphql-resolvers');
 
-const {
-  isAuthenticated,
-  isTagOwner,
-} = require('./authorization');
+const { isAuthenticated, isTagOwner } = require('./authorization');
 
 module.exports = {
   Query: {
@@ -18,11 +15,11 @@ module.exports = {
   },
   Mutation: {
     addNewTagData: combineResolvers(
-      //isAuthenticated,
-      //isTagOwner,
+      // isAuthenticated,
+      // isTagOwner,
       async (_, { data }, { dataSources, me }) => {
         return dataSources.firebaseAPI.addNewTagData({ data, me });
-      },
+      }
     ),
   },
   Tag: {
@@ -38,27 +35,25 @@ module.exports = {
       tagDetail.createTime.toDate().toString(),
     lastUpdateTime: async (tagDetail, _, __) =>
       tagDetail.lastUpdateTime.toDate().toString(),
-    createUser: async (tagDetail, _, __) =>
-      tagDetail.createUserID,
+    createUser: async (tagDetail, _, __) => tagDetail.createUserID,
   },
   User: {
-    id: async (userId, _, __) =>
-      userId,
+    id: async (userId, _, __) => userId,
     name: async (userId, _, { dataSources }) =>
       dataSources.firebaseAPI.getUserName({ uid: userId }),
   },
   Mission: {
     discoveries: async (mission, _, { dataSources }) =>
-      dataSources.firebaseAPI.getDiscoveriesOfAMission({ missionID: mission.id }),
+      dataSources.firebaseAPI.getDiscoveriesOfAMission({
+        missionID: mission.id,
+      }),
   },
   Discovery: {
     mission: async (discovery, _, { dataSources }) =>
       dataSources.firebaseAPI.getMissionById({ id: discovery.missionID }),
   },
   Coordinate: {
-    latitude: async (coordinates, _, __) => 
-      coordinates.latitude.toString(),
-    longitude: async (coordinates, _, __) =>
-      coordinates.longitude.toString(),
-  }
+    latitude: async (coordinates, _, __) => coordinates.latitude.toString(),
+    longitude: async (coordinates, _, __) => coordinates.longitude.toString(),
+  },
 };

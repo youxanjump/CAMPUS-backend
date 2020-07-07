@@ -4,7 +4,7 @@ const { AuthenticationError } = require('apollo-server-express');
 // geofirestore
 const { GeoFirestore } = require('geofirestore');
 // firebaseUtil
-const { getImageUploadUrls } = require('./firebaseUtils')
+const { getImageUploadUrls } = require('./firebaseUtils');
 
 /** Handle action with firebase
  *  @todo Rewrite this class name
@@ -75,7 +75,7 @@ class FirebaseAPI extends DataSource {
   async getList(collectionName) {
     const list = [];
     const querySnapshot = await this.firestore.collection(collectionName).get();
-    querySnapshot.forEach(doc => {
+    querySnapshot.forEach((doc) => {
       const data = doc.data();
       list.push({
         id: doc.id,
@@ -107,10 +107,7 @@ class FirebaseAPI extends DataSource {
    * @returns {object|null} Object of document data in collection `tagDetail`
    */
   async getTagDetail({ tagID }) {
-    const doc = await this.firestore
-      .collection('tagDetail')
-      .doc(tagID)
-      .get();
+    const doc = await this.firestore.collection('tagDetail').doc(tagID).get();
     if (!doc.exists) {
       return null;
     }
@@ -151,7 +148,7 @@ class FirebaseAPI extends DataSource {
    */
   async getDiscoveriesById({ ids }) {
     let discoveryList = {};
-    const docRefList = ids.map(id => ({
+    const docRefList = ids.map((id) => ({
       id,
       docSnap: this.firestore.collection('discoveryList').doc(id),
     }));
@@ -188,7 +185,7 @@ class FirebaseAPI extends DataSource {
       .collection('discoveryList')
       .where('missionID', '==', missionID)
       .get();
-    querySnapshot.forEach(doc => {
+    querySnapshot.forEach((doc) => {
       discoveryList.push({
         id: doc.id,
         ...doc.data(),
@@ -218,85 +215,81 @@ class FirebaseAPI extends DataSource {
    * @param {AddNewTagDataInputObject} param.data `AddNewTagDataInput` data
    * @param {DecodedIdToken} param.me have `uid` properity which specify
    *  the uid of the user.
-   * @returns {TagImageUpload} Contain the upload tag information, and image 
+   * @returns {TagImageUpload} Contain the upload tag information, and image
    *  upload Urls.
    */
   async addNewTagData({ data, me }) {
     // TODO: add tagData to firebase using geofirestore
-    try {
-      const tagGeoRef = this.geofirestore.collection('tagData');
-      const tagDetailRef = this.firestore.collection('tagDetail');
-      const missionListRef = this.firestore.collection('missionList');
+    const tagGeoRef = this.geofirestore.collection('tagData');
+    const tagDetailRef = this.firestore.collection('tagDetail');
+    const missionListRef = this.firestore.collection('missionList');
 
-      const {
-        // tag data
-        title,
-        accessibility,
-        missionID,
-        discoveryIDs,
-        coordinates,
-        // tag detail data
-        description,
-        // number of uploading images
-        imageNumber,
-      } = data;
+    const {
+      // tag data
+      title,
+      accessibility,
+      missionID,
+      discoveryIDs,
+      coordinates,
+      // tag detail data
+      description,
+      // number of uploading images
+      imageNumber,
+    } = data;
 
-      const tagData = {
-        title,
-        accessibility,
-        missionID,
-        discoveryIDs,
-        coordinates: new this.admin.firestore.GeoPoint(
-          parseFloat(coordinates.latitude),
-          parseFloat(coordinates.longitude)
-        ),
-      };
+    const tagData = {
+      title,
+      accessibility,
+      missionID,
+      discoveryIDs,
+      coordinates: new this.admin.firestore.GeoPoint(
+        parseFloat(coordinates.latitude),
+        parseFloat(coordinates.longitude)
+      ),
+    };
 
-      const tagDetail = {
-        createTime: this.admin.firestore.FieldValue.serverTimestamp(),
-        lastUpdateTime: this.admin.firestore.FieldValue.serverTimestamp(),
-        createUserID: 'test',
-        location: {
-          geoInfo: {
-            type: 'Point',
-            coordinates,
-          },
+    const tagDetail = {
+      createTime: this.admin.firestore.FieldValue.serverTimestamp(),
+      lastUpdateTime: this.admin.firestore.FieldValue.serverTimestamp(),
+      createUserID: 'test',
+      location: {
+        geoInfo: {
+          type: 'Point',
+          coordinates,
         },
-        description: description || '',
-      };
+      },
+      description: description || '',
+    };
 
-      // validation
-      const refToMissionDoc = await missionListRef.doc(missionID).get();
-      if (!refToMissionDoc.exists) {
-        //return null;
-        throw Error(`the mission id ${missionID} does not exist.`)
-      }
-      // TODO: how to do validation to an array(discoveryList)
-      // TODO: validate user
-
-      // add tagData to server
-      const refAfterTagAdd = await tagGeoRef.add(tagData);
-
-      // add tagDetail to server
-      tagDetailRef.doc(refAfterTagAdd.id).set(tagDetail);
-
-      // get tag snapshot data and return
-      const afterTagAddSnap = await tagGeoRef.doc(refAfterTagAdd.id).get();
-      const tagDataAfterUpload =  {
-        id: refAfterTagAdd.id,
-        ...afterTagAddSnap.data().d,
-      };
-      
-      return {
-        tag: tagDataAfterUpload,
-        imageNumber,
-        imageUploadUrl: 
-          await Promise.all(getImageUploadUrls(this.bucket, imageNumber, refAfterTagAdd.id)),
-      }
-    } catch (err) {
+    // validation
+    const refToMissionDoc = await missionListRef.doc(missionID).get();
+    if (!refToMissionDoc.exists) {
       //return null;
-      throw err;
+      throw Error(`the mission id ${missionID} does not exist.`);
     }
+    // TODO: how to do validation to an array(discoveryList)
+    // TODO: validate user
+
+    // add tagData to server
+    const refAfterTagAdd = await tagGeoRef.add(tagData);
+
+    // add tagDetail to server
+    tagDetailRef.doc(refAfterTagAdd.id).set(tagDetail);
+
+    // get tag snapshot data and return
+    const afterTagAddSnap = await tagGeoRef.doc(refAfterTagAdd.id).get();
+    const tagDataAfterUpload = {
+      id: refAfterTagAdd.id,
+      ...afterTagAddSnap.data().d,
+    };
+
+    return {
+      tag: tagDataAfterUpload,
+      imageNumber,
+      imageUploadUrl: await Promise.all(
+        getImageUploadUrls(this.bucket, imageNumber, refAfterTagAdd.id)
+      ),
+    };
   } // function async updateTagData
 } // class FirebaseAPI
 

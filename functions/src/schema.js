@@ -31,14 +31,14 @@ const typeDefs = gql`
     imageUrl: [String]
   }
 
-  type User{
+  type User {
     id: ID!
     name: String
     email: String
   }
 
   type Location {
-      geoInfo: JSON # import json type
+    geoInfo: JSON # import json type
   }
 
   type Coordinate {
@@ -47,15 +47,15 @@ const typeDefs = gql`
   }
 
   type Mission {
-      id: ID!
-      name: String
-      discoveries: [Discovery]
+    id: ID!
+    name: String
+    discoveries: [Discovery]
   }
 
   type Discovery {
-      id: ID!
-      mission: Mission
-      name: String
+    id: ID!
+    mission: Mission
+    name: String
   }
 
   # mutation

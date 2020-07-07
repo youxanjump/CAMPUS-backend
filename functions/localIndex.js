@@ -13,8 +13,7 @@ const apolloServer = require('./src');
 // Start our server if we're not in a test env.
 // if we're in a test env, we'll manually start it in a test
 if (process.env.NODE_ENV !== 'test') {
-  apolloServer({ admin }).use('/voyager', voyagerMiddleware({ endpointUrl: '/graphql' }))
-    .listen({ port: 4001 }, () =>
-      console.log('app running at port 4001')
-    );
+  apolloServer({ admin })
+    .use('/voyager', voyagerMiddleware({ endpointUrl: '/graphql' }))
+    .listen({ port: 4001 }, () => console.log('app running at port 4001'));
 }

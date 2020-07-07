@@ -13,7 +13,7 @@ const { skip } = require('graphql-resolvers');
  * If not login, return ForbiddenError forbid not login users
  */
 module.exports.isAuthenticated = (_, __, { me }) =>
-  (me ? skip : new ForbiddenError('User is not login'));
+  me ? skip : new ForbiddenError('User is not login');
 
 /**
  * A resover. If user want to modify the tag, check if user is the tag Owner.
@@ -27,8 +27,9 @@ module.exports.isAuthenticated = (_, __, { me }) =>
  */
 module.exports.isTagOwner = (_, { data }, { me, dataSources }) => {
   if (data.modify) {
-    const { createUser } = dataSources
-      .firestoreAPI.getTagCreateUser({ tagID: data.id });
+    const { createUser } = dataSources.firestoreAPI.getTagCreateUser({
+      tagID: data.id,
+    });
     if (createUser !== me.uid) {
       const errMsg = 'Can not change the tag. Not authenticated as owner';
       throw new ForbiddenError(errMsg);
