@@ -1,6 +1,11 @@
 # Overview
-- In the branch `graphql_server`
-- In the directory `[...]/SmartCampus/functions/graphql_server`
+- In the directory `functions/`
+
+## Installation
+- First you need to install all the necessary packages. Run the following command in the directory `functions`:
+  ```bash
+  npm install
+  ```
 
 ## Running, locally
 - 在run之前，要先下載專案的 service accounts file，並設定環境變數`GOOGLE_APPLICATION_CREDENTIALS`。[參考這裡](https://firebase.google.com/docs/admin/setup#initialize-sdk)
