@@ -1,0 +1,22 @@
+{
+  "name": "smartcampusdocs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stvreumi/SmartCampusDocs.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/stvreumi/SmartCampusDocs/issues"
+  },
+  "homepage": "https://github.com/stvreumi/SmartCampusDocs#readme",
+  "devDependencies": {
+    "docsify-cli": "^4.4.0"
+  }
+}
