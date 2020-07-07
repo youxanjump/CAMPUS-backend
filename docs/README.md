@@ -1,7 +1,11 @@
-# Smart Campus
+# CAMPUS
+
+## Document
+- https://campus-backend-docs.vercel.app/
 
 ## GitHub
-https://github.com/stvreumi/SmartCampus
+- [Front End](https://github.com/stvreumi/SmartCampus)
+- [Back End](https://github.com/stvreumi/CAMPUS-backend)
 
 ## Hackmd note
 https://hackmd.io/@chcchung/Bkm5ENNWH/%2FozNqOA71T8GvJmADDVNn-Q
