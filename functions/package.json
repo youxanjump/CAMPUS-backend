@@ -6,7 +6,10 @@
     "shell": "firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "localstart": "nodemon localIndex.js",
+    "docs": "npx jsdoc2md -f ./src/* ./src/datasources/* localIndex.js > ./docs/graphql.md",
+    "commit": "npx git-cz"
   },
   "engines": {
     "node": "8"
