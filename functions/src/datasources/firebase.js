@@ -215,7 +215,7 @@ class FirebaseAPI extends DataSource {
    * @param {AddNewTagDataInputObject} param.data `AddNewTagDataInput` data
    * @param {DecodedIdToken} param.me have `uid` properity which specify
    *  the uid of the user.
-   * @returns {TagImageUpload} Contain the upload tag information, and image
+   * @returns {AddNewTagResponse} Contain the upload tag information, and image
    *  upload Urls.
    */
   async addNewTagData({ data, me }) {

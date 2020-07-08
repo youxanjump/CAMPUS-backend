@@ -62,10 +62,10 @@ const typeDefs = gql`
   type Mutation {
     #tagUpdate(data: TagUpdateInput!): TagUpdateResponse!
     #tagImageUrlAdd(id: ID, imageUrl: [String]!): TagDetail!
-    addNewTagData(data: AddNewTagDataInput!): TagImageUpload
+    addNewTagData(data: AddNewTagDataInput!): AddNewTagResponse
   }
 
-  type TagImageUpload {
+  type AddNewTagResponse {
     tag: Tag!
     imageNumber: Int!
     imageUploadUrl: [String]!
