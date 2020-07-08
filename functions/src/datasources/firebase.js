@@ -264,7 +264,7 @@ class FirebaseAPI extends DataSource {
     // validation
     const refToMissionDoc = await missionListRef.doc(missionID).get();
     if (!refToMissionDoc.exists) {
-      //return null;
+      // return null;
       throw Error(`the mission id ${missionID} does not exist.`);
     }
     // TODO: how to do validation to an array(discoveryList)
