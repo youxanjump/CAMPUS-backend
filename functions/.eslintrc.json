@@ -14,7 +14,7 @@
     },
     "rules": {
         // https://github.com/prettier/eslint-plugin-prettier#installation
-        "prettier/prettier": "error",
+        "prettier/prettier": "warn",
         "no-console": "off",
         "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
     }
