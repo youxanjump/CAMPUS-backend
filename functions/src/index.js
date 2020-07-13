@@ -1,6 +1,5 @@
 /** @module src/index */
-const express = require('express');
-const { ApolloServer } = require('apollo-server-express');
+const { ApolloServer} = require('apollo-server-express');
 
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
@@ -9,11 +8,9 @@ const FirebaseAPI = require('./datasources/firebase');
 /**
  * Apollo server instance
  * @param {object} {admin} firebase admin SDK
- * @returns {Express} express server instance running apollo graphql server
+ * @returns {ApolloServer} ApolloServer with config
  */
 function apolloServer({ admin }) {
-  // init express
-  const app = express();
 
   const dataSources = () => ({
     firebaseAPI: new FirebaseAPI({ admin }),
@@ -40,8 +37,8 @@ function apolloServer({ admin }) {
     playground: true, // enables the actual playground
   });
 
-  server.applyMiddleware({ app, path: '/graphql' });
-  return app;
+  //server.applyMiddleware({ app, path: '/' });
+  return server;
 }
 
 module.exports = apolloServer;

@@ -6,12 +6,19 @@ const admin = require('firebase-admin');
 
 admin.initializeApp();
 
+const express = require('express');
 const { express: voyagerMiddleware } = require('graphql-voyager/middleware');
 const apolloServer = require('./src');
 
-console.log('hello');
+//console.log('hello');
+//console.log(process.env);
 
-const app = apolloServer({ admin });
+const apolloServerApp = express();
+const apolloServerAdmin = apolloServer({ admin });
+
+apolloServerAdmin.applyMiddleware({ app: apolloServerApp, path: '/' });
+
+const voyagerApp = express();
 
 // vaoyager will ues `endpointUrl` to get schema
 // make sure its path is where the scehema locate
@@ -19,6 +26,7 @@ const app = apolloServer({ admin });
 // app.use('/voyager', voyagerMiddleware({ endpointUrl: '/smartcampus-1b31f/us-central1/graphql/graphql' }));
 
 // use in production
-app.use('/voyager', voyagerMiddleware({ endpointUrl: '/graphql/graphql' }));
+voyagerApp.use('/', voyagerMiddleware({ endpointUrl: '/graphql' }));
 
-exports.graphql = functions.https.onRequest(app);
+exports.graphql = functions.https.onRequest(apolloServerApp);
+exports.voyager = functions.https.onRequest(voyagerApp);
