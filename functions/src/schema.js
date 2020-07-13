@@ -29,6 +29,7 @@ const typeDefs = gql`
     location: Location
     description: String
     imageUrl: [String]
+    streetViewInfo: StreetView
   }
 
   type User {
@@ -44,6 +45,14 @@ const typeDefs = gql`
   type Coordinate {
     latitude: String!
     longitude: String!
+  }
+
+  type StreetView {
+    povHeading: Float!
+    povPitch: Float!
+    panoID: String!
+    latitude: Float!
+    longitude: Float!
   }
 
   type Mission {
