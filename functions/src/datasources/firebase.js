@@ -222,7 +222,6 @@ class FirebaseAPI extends DataSource {
     // TODO: add tagData to firebase using geofirestore
     const tagGeoRef = this.geofirestore.collection('tagData');
     const tagDetailRef = this.firestore.collection('tagDetail');
-    const missionListRef = this.firestore.collection('missionList');
 
     const {
       // tag data
@@ -260,15 +259,6 @@ class FirebaseAPI extends DataSource {
       },
       description: description || '',
     };
-
-    // validation
-    const refToMissionDoc = await missionListRef.doc(missionID).get();
-    if (!refToMissionDoc.exists) {
-      // return null;
-      throw Error(`the mission id ${missionID} does not exist.`);
-    }
-    // TODO: how to do validation to an array(discoveryList)
-    // TODO: validate user
 
     // add tagData to server
     const refAfterTagAdd = await tagGeoRef.add(tagData);
