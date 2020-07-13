@@ -205,6 +205,35 @@ class FirebaseAPI extends DataSource {
     return displayName;
   }
 
+  /**
+   * Add tag detail data to collection `tagDetailData`
+   * @param {object} param
+   * @param {String} param.tagID the id of the tag
+   * @param {object} param.detailFromTagData contain the necessary filed should
+   *  be added to tagDetail document
+   * @return {undefined}
+   */
+  async addNewTagDetailData({ tagID, detailFromTagData }) {
+    const tagDetailRef = this.firestore.collection('tagDetail');
+
+    const { coordinates, description } = detailFromTagData;
+
+    const tagDetail = {
+      createTime: this.admin.firestore.FieldValue.serverTimestamp(),
+      lastUpdateTime: this.admin.firestore.FieldValue.serverTimestamp(),
+      createUserID: 'test',
+      location: {
+        geoInfo: {
+          type: 'Point',
+          coordinates,
+        },
+      },
+      description: description || '',
+    };
+    // add tagDetail to server
+    await tagDetailRef.doc(tagID).set(tagDetail);
+  }
+
   // TODO: if id is null, add data, else update data and udptetime
   // check if user, discovery and task id are existed
   // TODO: refactor this function. Extract the verification process
@@ -221,7 +250,6 @@ class FirebaseAPI extends DataSource {
   async addNewTagData({ data, me }) {
     // TODO: add tagData to firebase using geofirestore
     const tagGeoRef = this.geofirestore.collection('tagData');
-    const tagDetailRef = this.firestore.collection('tagDetail');
 
     const {
       // tag data
@@ -247,24 +275,19 @@ class FirebaseAPI extends DataSource {
       ),
     };
 
-    const tagDetail = {
-      createTime: this.admin.firestore.FieldValue.serverTimestamp(),
-      lastUpdateTime: this.admin.firestore.FieldValue.serverTimestamp(),
-      createUserID: 'test',
-      location: {
-        geoInfo: {
-          type: 'Point',
-          coordinates,
-        },
-      },
-      description: description || '',
+    const detailFromTagData = {
+      coordinates,
+      description,
     };
 
     // add tagData to server
     const refAfterTagAdd = await tagGeoRef.add(tagData);
 
     // add tagDetail to server
-    tagDetailRef.doc(refAfterTagAdd.id).set(tagDetail);
+    await this.addNewTagDetailData({
+      tagID: refAfterTagAdd.id,
+      detailFromTagData,
+    });
 
     // get tag snapshot data and return
     const afterTagAddSnap = await tagGeoRef.doc(refAfterTagAdd.id).get();

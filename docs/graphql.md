@@ -9,6 +9,16 @@
 <dd></dd>
 </dl>
 
+## Functions
+
+<dl>
+<dt><a href="#getImageUploadUrls">getImageUploadUrls(imageNumber, tagID)</a> ⇒ <code>Array.&lt;Promise&gt;</code></dt>
+<dd><p>Generate Singed URL to let front end upload images in a tag to firebase storage
+The file name on the storage will looks like: <code>tagID/(8 digits uuid)</code>
+reference from: <a href="https://github.com/googleapis/nodejs-storage/blob/master/samples/generateV4UploadSignedUrl.js">https://github.com/googleapis/nodejs-storage/blob/master/samples/generateV4UploadSignedUrl.js</a></p>
+</dd>
+</dl>
+
 <a name="module_authorization"></a>
 
 ## authorization
@@ -51,11 +61,11 @@ Otherwise, the resolver return and ignore all the other resolvers.
 ## src/index
 <a name="module_src/index..apolloServer"></a>
 
-### src/index~apolloServer({admin}) ⇒ <code>Express</code>
+### src/index~apolloServer({admin}) ⇒ <code>ApolloServer</code>
 Apollo server instance
 
 **Kind**: inner method of [<code>src/index</code>](#module_src/index)  
-**Returns**: <code>Express</code> - express server instance running apollo graphql server  
+**Returns**: <code>ApolloServer</code> - ApolloServer with config  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -76,7 +86,9 @@ Apollo server instance
         * [.getMissionById(param)](#module_Firebase..FirebaseAPI+getMissionById) ⇒ <code>missionObject</code>
         * [.getDiscoveriesById(param)](#module_Firebase..FirebaseAPI+getDiscoveriesById) ⇒ <code>Array.&lt;discoveryObject&gt;</code>
         * [.getDiscoveriesOfAMission(param)](#module_Firebase..FirebaseAPI+getDiscoveriesOfAMission) ⇒ <code>Array.&lt;discoveryObject&gt;</code>
-        * [.updateTagData(param)](#module_Firebase..FirebaseAPI+updateTagData) ⇒ <code>TagUpdateResponseObject</code>
+        * [.getUserName(the)](#module_Firebase..FirebaseAPI+getUserName) ⇒ <code>string</code>
+        * [.addNewTagDetailData(param)](#module_Firebase..FirebaseAPI+addNewTagDetailData) ⇒ <code>undefined</code>
+        * [.addNewTagData(param)](#module_Firebase..FirebaseAPI+addNewTagData) ⇒ <code>AddNewTagResponse</code>
 
 <a name="module_Firebase..FirebaseAPI"></a>
 
@@ -100,7 +112,9 @@ Handle action with firebase
     * [.getMissionById(param)](#module_Firebase..FirebaseAPI+getMissionById) ⇒ <code>missionObject</code>
     * [.getDiscoveriesById(param)](#module_Firebase..FirebaseAPI+getDiscoveriesById) ⇒ <code>Array.&lt;discoveryObject&gt;</code>
     * [.getDiscoveriesOfAMission(param)](#module_Firebase..FirebaseAPI+getDiscoveriesOfAMission) ⇒ <code>Array.&lt;discoveryObject&gt;</code>
-    * [.updateTagData(param)](#module_Firebase..FirebaseAPI+updateTagData) ⇒ <code>TagUpdateResponseObject</code>
+    * [.getUserName(the)](#module_Firebase..FirebaseAPI+getUserName) ⇒ <code>string</code>
+    * [.addNewTagDetailData(param)](#module_Firebase..FirebaseAPI+addNewTagDetailData) ⇒ <code>undefined</code>
+    * [.addNewTagData(param)](#module_Firebase..FirebaseAPI+addNewTagData) ⇒ <code>AddNewTagResponse</code>
 
 <a name="new_module_Firebase..FirebaseAPI_new"></a>
 
@@ -208,17 +222,58 @@ from collection `discoveryList`.
 | param | <code>object</code> | 
 | param.missionID | <code>string</code> | 
 
-<a name="module_Firebase..FirebaseAPI+updateTagData"></a>
+<a name="module_Firebase..FirebaseAPI+getUserName"></a>
 
-#### firebaseAPI.updateTagData(param) ⇒ <code>TagUpdateResponseObject</code>
-Add or update tag data. Currently not implement updata function.
+#### firebaseAPI.getUserName(the) ⇒ <code>string</code>
+Get user's name from uid
 
 **Kind**: instance method of [<code>FirebaseAPI</code>](#module_Firebase..FirebaseAPI)  
-**Returns**: <code>TagUpdateResponseObject</code> - Contain the message of this operation  
+**Returns**: <code>string</code> - user's name of the uid  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| the | <code>uid</code> | uid of the user |
+
+<a name="module_Firebase..FirebaseAPI+addNewTagDetailData"></a>
+
+#### firebaseAPI.addNewTagDetailData(param) ⇒ <code>undefined</code>
+Add tag detail data to collection `tagDetailData`
+
+**Kind**: instance method of [<code>FirebaseAPI</code>](#module_Firebase..FirebaseAPI)  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | param | <code>object</code> |  |
-| param.data | <code>TagUpdateInputObject</code> | `TagUpdateInput` data |
+| param.tagID | <code>String</code> | the id of the tag |
+| param.detailFromTagData | <code>object</code> | contain the necessary filed should  be added to tagDetail document |
+
+<a name="module_Firebase..FirebaseAPI+addNewTagData"></a>
+
+#### firebaseAPI.addNewTagData(param) ⇒ <code>AddNewTagResponse</code>
+Add or update tag data. Currently not implement updata function.
+
+**Kind**: instance method of [<code>FirebaseAPI</code>](#module_Firebase..FirebaseAPI)  
+**Returns**: <code>AddNewTagResponse</code> - Contain the upload tag information, and image
+ upload Urls.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| param | <code>object</code> |  |
+| param.data | <code>AddNewTagDataInputObject</code> | `AddNewTagDataInput` data |
 | param.me | <code>DecodedIdToken</code> | have `uid` properity which specify  the uid of the user. |
+
+<a name="getImageUploadUrls"></a>
+
+## getImageUploadUrls(imageNumber, tagID) ⇒ <code>Array.&lt;Promise&gt;</code>
+Generate Singed URL to let front end upload images in a tag to firebase storage
+The file name on the storage will looks like: `tagID/(8 digits uuid)`
+reference from: https://github.com/googleapis/nodejs-storage/blob/master/samples/generateV4UploadSignedUrl.js
+
+**Kind**: global function  
+**Returns**: <code>Array.&lt;Promise&gt;</code> - an array contain singed urls with length `imageNumber`  
+
+| Param | Type |
+| --- | --- |
+| imageNumber | <code>Int</code> | 
+| tagID | <code>String</code> | 
 
