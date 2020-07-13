@@ -17,8 +17,7 @@
         "prettier/prettier": "warn",
         "no-console": "off",
         "no-unused-vars": ["error", { 
-            "argsIgnorePattern": "^_",
-            "endOfLine":"auto"
+            "argsIgnorePattern": "^_"
         }]
     }
 }
