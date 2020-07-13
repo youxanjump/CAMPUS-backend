@@ -8,7 +8,7 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "localstart": "nodemon localIndex.js",
-    "docs": "npx jsdoc2md -f ./src/* ./src/datasources/* localIndex.js > ./docs/graphql.md",
+    "docs": "npx jsdoc2md -f ./src/* ./src/datasources/* localIndex.js > ../docs/graphql.md",
     "commit": "npx git-cz"
   },
   "engines": {
@@ -41,6 +41,7 @@
     "eslint-plugin-prettier": "^3.1.4",
     "firebase-functions-test": "^0.1.6",
     "husky": "^4.2.5",
+    "jsdoc-to-markdown": "^6.0.1",
     "lint-staged": "^10.2.11",
     "prettier": "^2.0.5"
   },
