@@ -13,7 +13,7 @@ function generateFileName(imageNumber, tagID) {
  * reference from: https://github.com/googleapis/nodejs-storage/blob/master/samples/generateV4UploadSignedUrl.js
  * @param {Int} imageNumber
  * @param {String} tagID
- * @returns {Array[Promise]} an array contain singed urls with length `imageNumber`
+ * @returns {Promise[]} an array contain singed urls with length `imageNumber`
  */
 function getImageUploadUrls(bucket, imageNumber, tagID) {
   // These options will allow temporary uploading of the file with outgoing
