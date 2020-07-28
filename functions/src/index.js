@@ -1,5 +1,5 @@
 /** @module src/index */
-const { ApolloServer} = require('apollo-server-express');
+const { ApolloServer } = require('apollo-server-express');
 
 const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
@@ -11,7 +11,6 @@ const FirebaseAPI = require('./datasources/firebase');
  * @returns {ApolloServer} ApolloServer with config
  */
 function apolloServer({ admin }) {
-
   const dataSources = () => ({
     firebaseAPI: new FirebaseAPI({ admin }),
   });
@@ -20,7 +19,7 @@ function apolloServer({ admin }) {
     typeDefs,
     resolvers,
     dataSources,
-    formatError: (error) => {
+    formatError: error => {
       console.log('error');
       console.log(error);
       return error;
@@ -37,7 +36,7 @@ function apolloServer({ admin }) {
     playground: true, // enables the actual playground
   });
 
-  //server.applyMiddleware({ app, path: '/' });
+  // server.applyMiddleware({ app, path: '/' });
   return server;
 }
 
