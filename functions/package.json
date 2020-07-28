@@ -9,7 +9,9 @@
     "logs": "firebase functions:log",
     "localstart": "nodemon localIndex.js",
     "gen_docs": "npx jsdoc2md -f ./src/* ./src/datasources/* localIndex.js > ../docs/graphql.md",
-    "serve_docs": "npx docsify serve ../docs"
+    "serve_docs": "npx docsify serve ../docs",
+    "firestore": "firebase emulators:start --only firestore",
+    "test": "jest --watchAll"
   },
   "engines": {
     "node": "10"
@@ -34,6 +36,8 @@
   },
   "devDependencies": {
     "@firebase/testing": "^0.20.7",
+    "@types/jest": "^26.0.7",
+    "apollo-server-testing": "^2.16.0",
     "cz-conventional-changelog": "^3.2.0",
     "docsify-cli": "^4.4.1",
     "eslint": "^7.5.0",
@@ -42,6 +46,7 @@
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-prettier": "^3.1.4",
     "husky": "^4.2.5",
+    "jest": "^26.1.0",
     "jsdoc-to-markdown": "^6.0.1",
     "lint-staged": "^10.2.11",
     "prettier": "^2.0.5"
