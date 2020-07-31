@@ -24,11 +24,11 @@ class FirebaseAPI extends DataSource {
     this.firestore = admin.firestore();
     this.geofirestore = new GeoFirestore(this.firestore);
 
-    // for authentication
-    this.auth = admin.auth();
+    // // for authentication
+    // this.auth = admin.auth();
 
-    // for storage bucket
-    this.bucket = admin.storage().bucket();
+    // // for storage bucket
+    // this.bucket = admin.storage().bucket();
   }
 
   /**
