@@ -23,14 +23,14 @@ async function addData() {
   await admin.firestore().collection('discoveryList').doc('discovery_1').set({
     missionID: 'mission_1',
     name: '下雨濕滑',
-  })
+  });
   await admin.firestore().collection('discoveryList').doc('discovery_2').set({
     missionID: 'mission_1',
     name: '障礙物',
-  })
+  });
   await admin.firestore().collection('missionList').doc('mission_1').set({
     name: '道路障礙',
-  })
+  });
   // admin.firestore().collection('missionList').doc('mission_2').set({
   //     name: '無障礙設施',
   // })
@@ -44,7 +44,7 @@ async function addData() {
     },
     g: 'wsqj12622g',
     l: ['24.78658951085373° N', '120.9955623378204° E'],
-  })
+  });
   await admin.firestore().collection('tagData').doc('tagData_2').set({
     d: {
       accessibility: 2,
@@ -55,7 +55,7 @@ async function addData() {
     },
     g: 'wsqj12622g',
     l: ['24.78630703751725° N', '120.997289680426° E'],
-  })
+  });
   await admin.firestore().collection('tagData').doc('tagData_3').set({
     d: {
       accessibility: 0,
@@ -66,7 +66,7 @@ async function addData() {
     },
     g: 'wsqj12622g',
     l: ['24.7872616° N', '120.9969249° E'],
-  })
+  });
   await admin.firestore().collection('tagDetail').doc('tagData_1').set({
     createTime: 'June 29, 2020 at 4:01:05 PM UTC+8',
     createUserID: 'NO_USER',
@@ -76,13 +76,13 @@ async function addData() {
     location: {
       geoInfo: {
         coordinates: {
-          latitude: '24.78658951085373',
-          longitutde: '120.9955623378204',
+          latitude: 24.78658951085373,
+          longitude: 120.9955623378204,
         },
         type: 'Point',
       }
     }
-  })
+  });
   await admin.firestore().collection('tagDetail').doc('tagData_2').set({
     createTime: 'May 19, 2020 at 4:22:12 PM UTC+8',
     createUserID: 'NO_USER',
@@ -92,13 +92,13 @@ async function addData() {
     location: {
       geoInfo: {
         coordinates: {
-          latitude: '24.78630703751725',
-          longitutde: '120.997289680426',
+          latitude: 24.78630703751725,
+          longitude: 120.997289680426,
         },
         type: 'Point',
       }
     }
-  })
+  });
   await admin.firestore().collection('tagDetail').doc('tagData_3').set({
     createTime: 'June 1, 2020 at 1:27:51 AM UTC+8',
     createUserID: 'NO_USER',
@@ -108,13 +108,13 @@ async function addData() {
     location: {
       geoInfo: {
         coordinates: {
-          latitude: '24.7872616',
-          longitutde: '120.9969249',
+          latitude: 24.7872616,
+          longitude: 120.9969249,
         },
         type: 'Point',
       }
     }
-  })
+  });
 }
 async function clearCollection(collectionName) {
   const batch = admin.firestore().batch();
@@ -215,7 +215,7 @@ describe('Test get functions in firebase.js', () => {
     );
   });
   test('getDiscoveriesById', async () => {
-    const discoveries = await firebaseAPIinstance.getDiscoveriesById({ids: ['discovery_1','discovery_2'] });
+    const discoveries = await firebaseAPIinstance.getDiscoveriesById({ ids: ['discovery_1', 'discovery_2'] });
     expect(discoveries).not.toBeNull();
     expect(discoveries).toBeDefined();
     expect(discoveries[0]).toMatchObject({ missionID: 'mission_1' });
@@ -231,9 +231,48 @@ describe('Test get functions in firebase.js', () => {
     const discoveries = await firebaseAPIinstance.getDiscoveriesOfAMission({ missionID: 'mission_1' });
     expect(discoveries).not.toBeNull();
     expect(discoveries).toBeDefined();
-    expect(discoveries[0]).toMatchObject({missionID: 'mission_1'});
-    expect(discoveries[1]).toMatchObject({missionID: 'mission_1'});
+    expect(discoveries[0]).toMatchObject({ missionID: 'mission_1' });
+    expect(discoveries[1]).toMatchObject({ missionID: 'mission_1' });
     const noDiscoveries = await firebaseAPIinstance.getDiscoveriesOfAMission({ missionID: 'invalid' });
     expect(noDiscoveries).toHaveLength(0);
   });
+});
+describe('Test add functions in firebase.js', () => {
+  test('addNewTagDetailData', async () => {
+    await firebaseAPIinstance.addNewTagDetailData({
+      tagID: 'tagData_test',
+      detailFromTagData: {
+        coordinates: {
+          latitude: 0.0,
+          longitude: 0.0,
+        },
+        description: 'Sample text',
+      },
+    });
+    const tagDetail = await firebaseAPIinstance.getTagDetail({
+      tagID: 'tagData_test',
+    });
+    expect(tagDetail).not.toBeNull();
+    expect(tagDetail).toBeDefined();
+    expect(tagDetail).toMatchObject({
+      description: 'Sample text',
+    });
+  });
+  // test('addNewTagData', async () => {
+  //   await firebaseAPIinstance.addNewTagData({
+  //     data: {
+  //       title: 'test_tagData',
+  //       accessibility: 0,
+  //       missionID: 'mission_1',
+  //       discoveryIDs: 'discovery_2',
+  //       coordinates: {
+  //         latitude: '0.0',
+  //         longitude: '1.0',
+  //       },
+  //       description: 'Sample_description',
+  //       imageNumber: 1,
+  //     },
+  //     me: '',
+  //   });
+  // });
 });
