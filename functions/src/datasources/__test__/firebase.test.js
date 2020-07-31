@@ -19,22 +19,22 @@ function initial() {
   });
   firebaseAPIinstance = new FirebaseAPI({ admin });
 }
-function addData() {
-  admin.firestore().collection('discoveryList').doc('discovery_1').set({
+async function addData() {
+  await admin.firestore().collection('discoveryList').doc('discovery_1').set({
     missionID: 'mission_1',
     name: '下雨濕滑',
   })
-  admin.firestore().collection('discoveryList').doc('discovery_2').set({
+  await admin.firestore().collection('discoveryList').doc('discovery_2').set({
     missionID: 'mission_1',
     name: '障礙物',
   })
-  admin.firestore().collection('missionList').doc('mission_1').set({
+  await admin.firestore().collection('missionList').doc('mission_1').set({
     name: '道路障礙',
   })
   // admin.firestore().collection('missionList').doc('mission_2').set({
   //     name: '無障礙設施',
   // })
-  admin.firestore().collection('tagData').doc('tagData_1').set({
+  await admin.firestore().collection('tagData').doc('tagData_1').set({
     d: {
       accessibility: 4,
       coordinates: ['24.78658951085373° N', '120.9955623378204° E'],
@@ -45,7 +45,7 @@ function addData() {
     g: 'wsqj12622g',
     l: ['24.78658951085373° N', '120.9955623378204° E'],
   })
-  admin.firestore().collection('tagData').doc('tagData_2').set({
+  await admin.firestore().collection('tagData').doc('tagData_2').set({
     d: {
       accessibility: 2,
       coordinates: ['24.78630703751725° N', '120.997289680426° E'],
@@ -56,7 +56,7 @@ function addData() {
     g: 'wsqj12622g',
     l: ['24.78630703751725° N', '120.997289680426° E'],
   })
-  admin.firestore().collection('tagData').doc('tagData_3').set({
+  await admin.firestore().collection('tagData').doc('tagData_3').set({
     d: {
       accessibility: 0,
       coordinates: ['24.7872616° N', '120.9969249° E'],
@@ -67,7 +67,7 @@ function addData() {
     g: 'wsqj12622g',
     l: ['24.7872616° N', '120.9969249° E'],
   })
-  admin.firestore().collection('tagDetail').doc('tagData_1').set({
+  await admin.firestore().collection('tagDetail').doc('tagData_1').set({
     createTime: 'June 29, 2020 at 4:01:05 PM UTC+8',
     createUserID: 'NO_USER',
     description: '',
@@ -83,7 +83,7 @@ function addData() {
       }
     }
   })
-  admin.firestore().collection('tagDetail').doc('tagData_2').set({
+  await admin.firestore().collection('tagDetail').doc('tagData_2').set({
     createTime: 'May 19, 2020 at 4:22:12 PM UTC+8',
     createUserID: 'NO_USER',
     description: '',
@@ -99,7 +99,7 @@ function addData() {
       }
     }
   })
-  admin.firestore().collection('tagDetail').doc('tagData_3').set({
+  await admin.firestore().collection('tagDetail').doc('tagData_3').set({
     createTime: 'June 1, 2020 at 1:27:51 AM UTC+8',
     createUserID: 'NO_USER',
     description: '',
@@ -135,9 +135,9 @@ async function clearAll() {
   //         clear_collection(collection.id)
   //     }
   // })
-  let collectionName = ['discoveryList', 'missionList', 'tagData', 'tagDetail']
+  const collectionName = ['discoveryList', 'missionList', 'tagData', 'tagDetail']
   for (let index = 0; index < collectionName.length; index++) {
-    await clearCollection(collectionName[index])
+    await clearCollection(collectionName[index]);
   }
 }
 beforeAll(() => {
@@ -158,8 +158,8 @@ describe('Initialization on local emulator', () => {
     await addData();
   });
 });
-describe('Test functions', () => {
-  it('getList: discoveryList', async () => {
+describe('Test get functions in firebase.js', () => {
+  test('getList: discoveryList', async () => {
     const discoveryList = await firebaseAPIinstance.getList('discoveryList');
     // console.log('--------------------------------------',discoveryList.length)
     expect(discoveryList).not.toBeNull();
@@ -170,14 +170,14 @@ describe('Test functions', () => {
     ]);
     expect(discoveryList).toHaveLength(2);
   });
-  it('getList: missionList', async () => {
+  test('getList: missionList', async () => {
     const missionList = await firebaseAPIinstance.getList('missionList');
     expect(missionList).not.toBeNull();
     expect(missionList).toBeDefined();
     expect(missionList).toMatchObject([{ id: 'mission_1' }]);
     expect(missionList).toHaveLength(1);
   });
-  it('getTagList', async () => {
+  test('getTagList', async () => {
     const tagList = await firebaseAPIinstance.getTagList();
     expect(tagList).not.toBeNull();
     expect(tagList).toBeDefined();
@@ -188,7 +188,7 @@ describe('Test functions', () => {
     ]);
     expect(tagList).toHaveLength(3);
   });
-  it('getTagDetail', async () => {
+  test('getTagDetail', async () => {
     const tagDetail = await firebaseAPIinstance.getTagDetail({
       tagID: 'tagData_1',
     });
@@ -202,7 +202,7 @@ describe('Test functions', () => {
     });
     expect(noTagDetail).toBeNull();
   });
-  it('getMissionById', async () => {
+  test('getMissionById', async () => {
     const mission = await firebaseAPIinstance.getMissionById({ id: 'mission_1' });
     expect(mission).not.toBeNull();
     expect(mission).toBeDefined();
@@ -213,5 +213,27 @@ describe('Test functions', () => {
     await expect(noMission).rejects.toThrowError(
       new Error(`can't get document: invalid`)
     );
+  });
+  test('getDiscoveriesById', async () => {
+    const discoveries = await firebaseAPIinstance.getDiscoveriesById({ids: ['discovery_1','discovery_2'] });
+    expect(discoveries).not.toBeNull();
+    expect(discoveries).toBeDefined();
+    expect(discoveries[0]).toMatchObject({ missionID: 'mission_1' });
+    expect(discoveries[1]).toMatchObject({ name: '障礙物' });
+    async function noDiscovery() {
+      await firebaseAPIinstance.getDiscoveriesById({ ids: ['invalid'] });
+    }
+    await expect(noDiscovery).rejects.toThrowError(
+      new Error(`can't get document: invalid`)
+    );
+  });
+  test('getDiscoveriesOfAMission', async () => {
+    const discoveries = await firebaseAPIinstance.getDiscoveriesOfAMission({ missionID: 'mission_1' });
+    expect(discoveries).not.toBeNull();
+    expect(discoveries).toBeDefined();
+    expect(discoveries[0]).toMatchObject({missionID: 'mission_1'});
+    expect(discoveries[1]).toMatchObject({missionID: 'mission_1'});
+    const noDiscoveries = await firebaseAPIinstance.getDiscoveriesOfAMission({ missionID: 'invalid' });
+    expect(noDiscoveries).toHaveLength(0);
   });
 });
