@@ -11,18 +11,18 @@
     "gen_docs": "npx jsdoc2md -f ./src/* ./src/datasources/* localIndex.js > ../docs/graphql.md",
     "serve_docs": "npx docsify serve ../docs",
     "firestore": "firebase emulators:start --only firestore",
-    "test": "jest --watchAll"
+    "test": "jest --watchAll --runInBand --detectOpenHandles"
   },
   "engines": {
     "node": "10"
   },
   "dependencies": {
     "apollo-datasource": "^0.6.3",
-    "apollo-server": "^2.16.0",
-    "apollo-server-express": "^2.16.0",
+    "apollo-server": "^2.16.1",
+    "apollo-server-express": "^2.16.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "firebase": "^7.16.1",
+    "firebase": "^7.17.1",
     "firebase-admin": "^8.6.0",
     "firebase-functions": "^3.8.0",
     "geofirestore": "^3.3.1",
@@ -32,12 +32,12 @@
     "graphql-voyager": "^1.0.0-rc.29",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "uuid": "^8.2.0"
+    "uuid": "^8.3.0"
   },
   "devDependencies": {
-    "@firebase/testing": "^0.20.7",
+    "@firebase/testing": "^0.20.9",
     "@types/jest": "^26.0.7",
-    "apollo-server-testing": "^2.16.0",
+    "apollo-server-testing": "^2.16.1",
     "cz-conventional-changelog": "^3.2.0",
     "docsify-cli": "^4.4.1",
     "eslint": "^7.5.0",
@@ -45,6 +45,7 @@
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-prettier": "^3.1.4",
+    "graphql-tag": "^2.11.0",
     "husky": "^4.2.5",
     "jest": "^26.1.0",
     "jsdoc-to-markdown": "^6.0.1",
