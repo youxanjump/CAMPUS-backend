@@ -75,7 +75,7 @@ class FirebaseAPI extends DataSource {
   async getList(collectionName) {
     const list = [];
     const querySnapshot = await this.firestore.collection(collectionName).get();
-    querySnapshot.forEach((doc) => {
+    querySnapshot.forEach(doc => {
       const data = doc.data();
       list.push({
         id: doc.id,
@@ -148,7 +148,7 @@ class FirebaseAPI extends DataSource {
    */
   async getDiscoveriesById({ ids }) {
     let discoveryList = {};
-    const docRefList = ids.map((id) => ({
+    const docRefList = ids.map(id => ({
       id,
       docSnap: this.firestore.collection('discoveryList').doc(id),
     }));
@@ -185,7 +185,7 @@ class FirebaseAPI extends DataSource {
       .collection('discoveryList')
       .where('missionID', '==', missionID)
       .get();
-    querySnapshot.forEach((doc) => {
+    querySnapshot.forEach(doc => {
       discoveryList.push({
         id: doc.id,
         ...doc.data(),
@@ -206,14 +206,14 @@ class FirebaseAPI extends DataSource {
   }
 
   /**
-   * Add tag detail data to collection `tagDetailData`
+   * Add tag detail data to collection `tagDetailData` in firestore
    * @param {object} param
    * @param {String} param.tagID the id of the tag
    * @param {object} param.detailFromTagData contain the necessary filed should
    *  be added to tagDetail document
    * @return {undefined}
    */
-  async addNewTagDetailData({ tagID, detailFromTagData }) {
+  async setTagDetailToFirestore({ tagID, detailFromTagData }) {
     const tagDetailRef = this.firestore.collection('tagDetail');
 
     const { coordinates, description } = detailFromTagData;
@@ -234,6 +234,29 @@ class FirebaseAPI extends DataSource {
     await tagDetailRef.doc(tagID).set(tagDetail);
   }
 
+  /**
+   * Add tag data to collection `tagData` in firestore
+   * @param {object} param
+   * @param {object} param.tagData contain the necessary filed should
+   *  be added to tagData document
+   */
+  async addTagDataToFirestore({ tagData }) {
+    const tagGeoRef = this.geofirestore.collection('tagData');
+
+    // add tagData to server
+    const refAfterTagAdd = await tagGeoRef.add(tagData);
+
+    // get tag snapshot data and return
+    const afterTagAddSnap = await refAfterTagAdd.get();
+
+    return {
+      id: refAfterTagAdd.id,
+      // no need to destructure `d` property, <GeoDocumentReference> will
+      // handle it.
+      ...afterTagAddSnap.data(),
+    };
+  }
+
   // TODO: if id is null, add data, else update data and udptetime
   // check if user, discovery and task id are existed
   // TODO: refactor this function. Extract the verification process
@@ -247,10 +270,7 @@ class FirebaseAPI extends DataSource {
    * @returns {AddNewTagResponse} Contain the upload tag information, and image
    *  upload Urls.
    */
-  async addNewTagData({ data, me }) {
-    // TODO: add tagData to firebase using geofirestore
-    const tagGeoRef = this.geofirestore.collection('tagData');
-
+  async addNewTagData({ data, _me }) {
     const {
       // tag data
       title,
@@ -275,32 +295,26 @@ class FirebaseAPI extends DataSource {
       ),
     };
 
+    const tagDataDocumentData = await this.addTagDataToFirestore({ tagData });
+
+    const { id: tagDataDocumentID } = tagDataDocumentData;
+
     const detailFromTagData = {
       coordinates,
       description,
     };
 
-    // add tagData to server
-    const refAfterTagAdd = await tagGeoRef.add(tagData);
-
     // add tagDetail to server
-    await this.addNewTagDetailData({
-      tagID: refAfterTagAdd.id,
+    await this.setTagDetailToFirestore({
+      tagID: tagDataDocumentID,
       detailFromTagData,
     });
 
-    // get tag snapshot data and return
-    const afterTagAddSnap = await tagGeoRef.doc(refAfterTagAdd.id).get();
-    const tagDataAfterUpload = {
-      id: refAfterTagAdd.id,
-      ...afterTagAddSnap.data().d,
-    };
-
     return {
-      tag: tagDataAfterUpload,
+      tag: tagDataDocumentData,
       imageNumber,
       imageUploadUrl: await Promise.all(
-        getImageUploadUrls(this.bucket, imageNumber, refAfterTagAdd.id)
+        getImageUploadUrls(this.bucket, imageNumber, tagDataDocumentID)
       ),
     };
   } // function async updateTagData
