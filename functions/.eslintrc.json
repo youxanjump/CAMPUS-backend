@@ -19,6 +19,10 @@
       {
         "argsIgnorePattern": "^_"
       }
+    ],
+    "import/no-extraneous-dependencies": [
+      "error",
+      { "devDependencies": ["**/__test__/*"] }
     ]
   }
 }
