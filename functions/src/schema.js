@@ -6,6 +6,7 @@ const typeDefs = gql`
 
   type Query {
     tagRenderList: [Tag]
+    tag(id: ID!): Tag
     tagDetail(id: ID!): TagDetail
     missionList: [Mission]
     discoveryList: [Discovery]
@@ -15,10 +16,15 @@ const typeDefs = gql`
     id: ID!
     title: String
     accessibility: Float
-    mission: Mission
-    discoveries: [Discovery]
+    category: Category
     coordinates: Coordinate
     tagDetail: TagDetail
+  }
+
+  type Category {
+    missionName: String!
+    subTypeName: String
+    targetName: String
   }
 
   type TagDetail {
@@ -80,6 +86,7 @@ const typeDefs = gql`
     imageUploadUrl: [String]!
   }
 
+  # deprecated
   input TagUpdateInput {
     "set null if we want to create new data"
     id: ID
@@ -87,8 +94,6 @@ const typeDefs = gql`
     modify: Boolean!
     title: String
     accessibility: Float
-    missionID: String
-    discoveryIDs: [String]
     coordinates: CoordinateInput
     description: String
   }
@@ -96,8 +101,7 @@ const typeDefs = gql`
   input AddNewTagDataInput {
     title: String
     accessibility: Float
-    missionID: String
-    discoveryIDs: [String]
+    category: CategoryInput
     coordinates: CoordinateInput
     description: String
     imageNumber: Int
@@ -106,6 +110,12 @@ const typeDefs = gql`
   input CoordinateInput {
     latitude: String
     longitude: String
+  }
+
+  input CategoryInput {
+    missionName: String!
+    subTypeName: String
+    targetName: String
   }
 `;
 

@@ -275,9 +275,8 @@ class FirebaseAPI extends DataSource {
       // tag data
       title,
       accessibility,
-      missionID,
-      discoveryIDs,
       coordinates,
+      category,
       // tag detail data
       description,
       // number of uploading images
@@ -287,8 +286,7 @@ class FirebaseAPI extends DataSource {
     const tagData = {
       title,
       accessibility,
-      missionID,
-      discoveryIDs,
+      category,
       coordinates: new this.admin.firestore.GeoPoint(
         parseFloat(coordinates.latitude),
         parseFloat(coordinates.longitude)

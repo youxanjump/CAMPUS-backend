@@ -20,7 +20,7 @@ describe('test graphql query', () => {
   let queryClient;
   let mutateClient;
   let firestore;
-  beforeAll(() => {
+  beforeAll(async () => {
     // set up firebase admin
     const admin = mockFirebaseAdmin(testProjectId);
 
@@ -32,7 +32,7 @@ describe('test graphql query', () => {
 
     // set up fake data to firestore
     firestore = admin.firestore();
-    addFakeDatatoFirestore(firestore);
+    await addFakeDatatoFirestore(firestore);
   });
   afterAll(async () => {
     await Promise.all(firebase.apps().map(app => app.delete()));
@@ -45,13 +45,10 @@ describe('test graphql query', () => {
           id
           title
           accessibility
-          mission {
-            id
-            name
-          }
-          discoveries {
-            id
-            name
+          category {
+            missionName
+            subTypeName
+            targetName
           }
           coordinates {
             latitude
@@ -68,11 +65,11 @@ describe('test graphql query', () => {
       id: fakeDataId,
       title: fakeTagData.title,
       accessibility: fakeTagData.accessibility,
-      mission: {
-        id: expect.any(String),
-        name: expect.any(String),
+      category: {
+        missionName: expect.any(String),
+        subTypeName: expect.any(String),
+        targetName: expect.any(String),
       },
-      discoveries: expect.any(Array),
       coordinates: {
         latitude: expect.any(String),
         longitude: expect.any(String),
@@ -122,7 +119,7 @@ describe('test graphql query', () => {
     const dataInFirestore = (
       await firestore.collection('tagDetail').doc(fakeDataId).get()
     ).data();
-    console.log(dataInFirestore);
+    // console.log(dataInFirestore);
     expect(dataInFirestore).toMatchObject({
       createTime: expect.any(firebase.firestore.Timestamp),
       lastUpdateTime: expect.any(firebase.firestore.Timestamp),
@@ -135,6 +132,11 @@ describe('test graphql query', () => {
           tag {
             id
             title
+            category {
+              missionName
+              subTypeName
+              targetName
+            }
           }
           imageNumber
           imageUploadUrl
@@ -142,15 +144,12 @@ describe('test graphql query', () => {
       }
     `;
     const data = {
-      title: 'mutation test',
-      accessibility: 4,
-      missionID: 'mission-test',
-      discoveryIDs: ['discovery-test'],
+      ...fakeTagData,
       coordinates: {
-        latitude: '24.787257',
-        longitude: '120.997634',
+        latitude: fakeDetailFromTagData.coordinates[1],
+        longitude: fakeDetailFromTagData.coordinates[0],
       },
-      description: 'graphql mutation test',
+      description: fakeDetailFromTagData.description,
       imageNumber: 2,
     };
     const result = await mutateClient({

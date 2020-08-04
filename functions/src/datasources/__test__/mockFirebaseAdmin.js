@@ -3,11 +3,16 @@ const { GeoFirestore } = require('geofirestore');
 
 const fakeDataId = 'test-fakedata-id';
 
+const fakeCategory = {
+  missionName: '設施任務',
+  subTypeName: '無障礙設施',
+  targetName: '無障礙坡道',
+};
+
 const fakeTagData = {
   title: 'test',
   accessibility: 5,
-  missionID: 'mission-test',
-  discoveryIDs: ['discovery-test'],
+  category: { ...fakeCategory },
   coordinates: new firebase.firestore.GeoPoint(
     24.786671229129603,
     120.99745541810988
@@ -88,3 +93,4 @@ exports.addFakeDatatoFirestore = addFakeDatatoFirestore;
 exports.fakeTagData = fakeTagData;
 exports.fakeDetailFromTagData = fakeDetailFromTagData;
 exports.fakeDataId = fakeDataId;
+exports.fakeCategory = fakeCategory;

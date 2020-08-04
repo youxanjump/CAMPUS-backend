@@ -1,6 +1,6 @@
 const { combineResolvers } = require('graphql-resolvers');
 
-const { isAuthenticated, isTagOwner } = require('./authorization');
+// const { isAuthenticated, isTagOwner } = require('./authorization');
 
 module.exports = {
   Query: {
@@ -25,10 +25,6 @@ module.exports = {
   Tag: {
     tagDetail: async (tag, _, { dataSources }) =>
       dataSources.firebaseAPI.getTagDetail({ tagID: tag.id }),
-    mission: async (tag, _, { dataSources }) =>
-      dataSources.firebaseAPI.getMissionById({ id: tag.missionID }),
-    discoveries: async (tag, _, { dataSources }) =>
-      dataSources.firebaseAPI.getDiscoveriesById({ ids: tag.discoveryIDs }),
   },
   TagDetail: {
     createTime: async (tagDetail, _, __) =>

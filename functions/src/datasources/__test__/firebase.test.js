@@ -33,8 +33,6 @@ describe('test data add operation', () => {
     expect(data).toMatchObject({
       id: expect.any(String),
       accessibility: tagData.accessibility,
-      missionID: tagData.missionID,
-      discoveryIDs: tagData.discoveryIDs,
       coordinates: tagData.coordinates,
     });
   });
@@ -101,15 +99,12 @@ describe('test data add operation', () => {
   });
   test('test `addNewTagData`', async () => {
     const data = {
-      title: 'test',
-      accessibility: 5,
-      missionID: 'mission-test',
-      discoveryIDs: ['discovery-test'],
+      ...fakeTagData,
       coordinates: {
-        latitude: 1.0,
-        longitude: 1.0,
+        latitude: fakeDetailFromTagData.coordinates[1],
+        longitude: fakeDetailFromTagData.coordinates[0],
       },
-      description: 'description-test',
+      description: fakeDetailFromTagData.description,
       imageNumber: 2,
     };
 
@@ -118,9 +113,8 @@ describe('test data add operation', () => {
     expect(responseData.tag).toMatchObject({
       id: expect.any(String),
       accessibility: data.accessibility,
-      missionID: data.missionID,
-      discoveryIDs: data.discoveryIDs,
-      coordinates: data.coordinates,
+      category: data.category,
+      coordinates: expect.any(firebase.firestore.GeoPoint),
     });
     expect(responseData.imageNumber).toEqual(responseData.imageNumber);
     expect(responseData.imageUploadUrl.length).toEqual(
