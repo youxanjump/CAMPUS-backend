@@ -86,17 +86,13 @@ class FirebaseAPI extends DataSource {
   }
 
   /**
-   * Geofirestore will store not geo-related data in field `d`.
-   * This function get field `d` data from collection `tagData`
+   * Return data list from collection `tagData`
+   * (Geofirestore `d` field is removed from verson 4)
    * @async
-   * @returns {object} Object with id and `d` unpacked data of document
-   * in collection `tagData`
+   * @returns {object} Data with id
    */
   async getTagList() {
-    const tagList = await this.getList('tagData');
-    const unpackTagList = tagList.map(({ id, d }) => ({ id, ...d }));
-
-    return unpackTagList;
+    return this.getList('tagData');
   }
 
   /**
