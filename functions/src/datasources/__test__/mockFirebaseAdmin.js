@@ -9,6 +9,14 @@ const fakeCategory = {
   targetName: '無障礙坡道',
 };
 
+const fakeStreetViewData = {
+  povHeading: 52.16330308370064,
+  povPitch: -14.148336578552815,
+  panoID: '0pq7qRZQvlQ8rzUrnZLk2g',
+  latitude: 24.7872616,
+  longitude: 120.9969249,
+};
+
 const fakeTagData = {
   title: 'test',
   accessibility: 5,
@@ -23,6 +31,7 @@ const fakeDetailFromTagData = {
   description: 'test-description',
   // [longitude, latitude]
   coordinates: ['120.99745541810988', '24.786671229129603'],
+  streetViewInfo: { ...fakeStreetViewData },
 };
 
 /**

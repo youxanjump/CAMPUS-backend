@@ -87,9 +87,6 @@ describe('test graphql query', () => {
           createUser {
             id
           }
-          location {
-            geoInfo
-          }
           description
           imageUrl
         }
@@ -107,12 +104,6 @@ describe('test graphql query', () => {
       lastUpdateTime: expect.any(String),
       createUser: {
         id: expect.any(String),
-      },
-      location: {
-        geoInfo: {
-          type: 'Point',
-          coordinates: fakeDetailFromTagData.coordinates,
-        },
       },
       description: expect.any(String),
     });
@@ -151,6 +142,7 @@ describe('test graphql query', () => {
       },
       description: fakeDetailFromTagData.description,
       imageNumber: 2,
+      streetViewInfo: fakeDetailFromTagData.streetViewInfo,
     };
     const result = await mutateClient({
       mutation: mutateTag,
@@ -170,5 +162,17 @@ describe('test graphql query', () => {
       imageUploadUrl: expect.any(Array),
     });
     expect(responseData.imageUploadUrl.length).toEqual(data.imageNumber);
+
+    // check detail collection data
+    const detailDocData = (
+      await firestore.collection('tagDetail').doc(responseData.tag.id).get()
+    ).data();
+    // console.log(detailDoc);
+    expect(detailDocData).toMatchObject({
+      createTime: expect.any(firebase.firestore.Timestamp),
+      lastUpdateTime: expect.any(firebase.firestore.Timestamp),
+      description: fakeDetailFromTagData.description,
+      streetViewInfo: fakeDetailFromTagData.streetViewInfo,
+    });
   });
 });

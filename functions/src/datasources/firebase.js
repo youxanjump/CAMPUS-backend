@@ -212,19 +212,14 @@ class FirebaseAPI extends DataSource {
   async setTagDetailToFirestore({ tagID, detailFromTagData }) {
     const tagDetailRef = this.firestore.collection('tagDetail');
 
-    const { coordinates, description } = detailFromTagData;
+    const { description, streetViewInfo } = detailFromTagData;
 
     const tagDetail = {
       createTime: this.admin.firestore.FieldValue.serverTimestamp(),
       lastUpdateTime: this.admin.firestore.FieldValue.serverTimestamp(),
       createUserID: 'test',
-      location: {
-        geoInfo: {
-          type: 'Point',
-          coordinates,
-        },
-      },
       description: description || '',
+      streetViewInfo: streetViewInfo || null,
     };
     // add tagDetail to server
     await tagDetailRef.doc(tagID).set(tagDetail);
@@ -264,7 +259,6 @@ class FirebaseAPI extends DataSource {
    * @param {DecodedIdToken} param.me have `uid` properity which specify
    *  the uid of the user.
    * @returns {AddNewTagResponse} Contain the upload tag information, and image
-   *  upload Urls.
    */
   async addNewTagData({ data, _me }) {
     const {
@@ -273,8 +267,9 @@ class FirebaseAPI extends DataSource {
       accessibility,
       coordinates,
       category,
-      // tag detail data
+      // ## tag detail data
       description,
+      streetViewInfo,
       // number of uploading images
       imageNumber,
     } = data;
@@ -294,8 +289,8 @@ class FirebaseAPI extends DataSource {
     const { id: tagDataDocumentID } = tagDataDocumentData;
 
     const detailFromTagData = {
-      coordinates,
       description,
+      streetViewInfo,
     };
 
     // add tagDetail to server

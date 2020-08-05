@@ -2,7 +2,6 @@ const { gql } = require('apollo-server');
 
 const typeDefs = gql`
   # schema definition
-  scalar JSON
 
   type Query {
     tagRenderList: [Tag]
@@ -32,7 +31,6 @@ const typeDefs = gql`
     createTime: String
     lastUpdateTime: String
     createUser: User
-    location: Location
     description: String
     imageUrl: [String]
     streetViewInfo: StreetView
@@ -42,10 +40,6 @@ const typeDefs = gql`
     id: ID!
     name: String
     email: String
-  }
-
-  type Location {
-    geoInfo: JSON # import json type
   }
 
   type Coordinate {
@@ -105,6 +99,7 @@ const typeDefs = gql`
     coordinates: CoordinateInput
     description: String
     imageNumber: Int
+    streetViewInfo: StreetViewInput
   }
 
   input CoordinateInput {
@@ -116,6 +111,14 @@ const typeDefs = gql`
     missionName: String!
     subTypeName: String
     targetName: String
+  }
+
+  input StreetViewInput {
+    povHeading: Float!
+    povPitch: Float!
+    panoID: String!
+    latitude: Float!
+    longitude: Float!
   }
 `;
 

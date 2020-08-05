@@ -57,13 +57,8 @@ describe('test data add operation', () => {
       createTime: expect.any(firebase.firestore.Timestamp),
       lastUpdateTime: expect.any(firebase.firestore.Timestamp),
       createUserID: expect.any(String),
-      location: {
-        geoInfo: {
-          type: 'Point',
-          coordinates: detailFromTagData.coordinates,
-        },
-      },
       description: detailFromTagData.description,
+      streetViewInfo: detailFromTagData.streetViewInfo,
     });
   });
   test('test `setTagDetailToFirestore` with no description', async () => {
@@ -88,13 +83,8 @@ describe('test data add operation', () => {
     expect(detailData).toMatchObject({
       createTime: expect.any(firebase.firestore.Timestamp),
       lastUpdateTime: expect.any(firebase.firestore.Timestamp),
-      location: {
-        geoInfo: {
-          type: 'Point',
-          coordinates: detailFromTagData.coordinates,
-        },
-      },
       description: '',
+      streetViewInfo: detailFromTagData.streetViewInfo,
     });
   });
   test('test `addNewTagData`', async () => {
@@ -105,6 +95,7 @@ describe('test data add operation', () => {
         longitude: fakeDetailFromTagData.coordinates[0],
       },
       description: fakeDetailFromTagData.description,
+      streetViewInfo: fakeDetailFromTagData.streetViewInfo,
       imageNumber: 2,
     };
 
@@ -121,6 +112,18 @@ describe('test data add operation', () => {
       responseData.imageNumber
     );
     expect(responseData.imageUploadUrl).toContain('http://signed.url');
+
+    // check detail collection data
+    const detailDocData = (
+      await firestore.collection('tagDetail').doc(responseData.tag.id).get()
+    ).data();
+    // console.log(detailDoc);
+    expect(detailDocData).toMatchObject({
+      createTime: expect.any(firebase.firestore.Timestamp),
+      lastUpdateTime: expect.any(firebase.firestore.Timestamp),
+      description: fakeDetailFromTagData.description,
+      streetViewInfo: fakeDetailFromTagData.streetViewInfo,
+    });
   });
 }); // end describe
 
