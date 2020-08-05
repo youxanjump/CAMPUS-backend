@@ -43,7 +43,7 @@ describe('test graphql query', () => {
       query {
         tagRenderList {
           id
-          title
+          locationName
           accessibility
           category {
             missionName
@@ -63,7 +63,7 @@ describe('test graphql query', () => {
     // console.log(tagRenderListResult);
     expect(tagRenderListResult).toContainEqual({
       id: fakeDataId,
-      title: fakeTagData.title,
+      locationName: fakeTagData.locationName,
       accessibility: fakeTagData.accessibility,
       category: {
         missionName: expect.any(String),
@@ -122,7 +122,7 @@ describe('test graphql query', () => {
         addNewTagData(data: $data) {
           tag {
             id
-            title
+            locationName
             category {
               missionName
               subTypeName
@@ -156,7 +156,7 @@ describe('test graphql query', () => {
     expect(responseData).toMatchObject({
       tag: {
         id: expect.any(String),
-        title: data.title,
+        locationName: data.locationName,
       },
       imageNumber: data.imageNumber,
       imageUploadUrl: expect.any(Array),

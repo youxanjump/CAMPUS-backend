@@ -32,6 +32,7 @@ describe('test data add operation', () => {
     // console.log(data);
     expect(data).toMatchObject({
       id: expect.any(String),
+      locationName: tagData.locationName,
       accessibility: tagData.accessibility,
       coordinates: tagData.coordinates,
     });
@@ -103,6 +104,7 @@ describe('test data add operation', () => {
 
     expect(responseData.tag).toMatchObject({
       id: expect.any(String),
+      locationName: data.locationName,
       accessibility: data.accessibility,
       category: data.category,
       coordinates: expect.any(firebase.firestore.GeoPoint),

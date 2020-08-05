@@ -263,7 +263,7 @@ class FirebaseAPI extends DataSource {
   async addNewTagData({ data, _me }) {
     const {
       // tag data
-      title,
+      locationName,
       accessibility,
       coordinates,
       category,
@@ -275,7 +275,7 @@ class FirebaseAPI extends DataSource {
     } = data;
 
     const tagData = {
-      title,
+      locationName,
       accessibility,
       category,
       coordinates: new this.admin.firestore.GeoPoint(

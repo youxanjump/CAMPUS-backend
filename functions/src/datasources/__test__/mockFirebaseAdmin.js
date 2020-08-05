@@ -18,7 +18,7 @@ const fakeStreetViewData = {
 };
 
 const fakeTagData = {
-  title: 'test',
+  locationName: 'test',
   accessibility: 5,
   category: { ...fakeCategory },
   coordinates: new firebase.firestore.GeoPoint(

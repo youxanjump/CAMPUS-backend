@@ -13,7 +13,7 @@ const typeDefs = gql`
 
   type Tag {
     id: ID!
-    title: String
+    locationName: String
     accessibility: Float
     category: Category
     coordinates: Coordinate
@@ -86,14 +86,14 @@ const typeDefs = gql`
     id: ID
     "true if modifing existing tag; false if creaing new tag"
     modify: Boolean!
-    title: String
+    locationName: String
     accessibility: Float
     coordinates: CoordinateInput
     description: String
   }
 
   input AddNewTagDataInput {
-    title: String
+    locationName: String
     accessibility: Float
     category: CategoryInput
     coordinates: CoordinateInput
