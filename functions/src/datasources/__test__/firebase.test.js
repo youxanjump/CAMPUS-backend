@@ -7,11 +7,14 @@ const {
   mockFirebaseAdmin,
   fakeTagData,
   fakeDetailFromTagData,
-} = require('./mockFirebaseAdmin');
+  fakeDataId,
+  addFakeDatatoFirestore,
+  clearFirestoreDatabase,
+} = require('./testUtils');
 
 // start the firestore emulator
 // port 8080
-const testProjectId = 'smartcampus-1b31f-test';
+const testProjectId = 'smartcampus-test';
 
 describe('test data add operation', () => {
   let firebaseAPIinstance;
@@ -23,6 +26,9 @@ describe('test data add operation', () => {
   });
   afterAll(async () => {
     await Promise.all(firebase.apps().map(app => app.delete()));
+  });
+  beforeEach(async () => {
+    await clearFirestoreDatabase(testProjectId);
   });
   test('test `addTagDataToFirestore`', async () => {
     const tagData = { ...fakeTagData };
@@ -129,24 +135,40 @@ describe('test data add operation', () => {
   });
 }); // end describe
 
-/*
-describe.skip('test data read operation', () => {
+describe('test data read operation', () => {
   let firebaseAPIinstance;
   let firestore;
-  beforeAll(() => {
+  beforeAll(async () => {
     const admin = mockFirebaseAdmin(testProjectId);
     firebaseAPIinstance = new FirebaseAPI({ admin });
     firestore = admin.firestore();
-
-    // add data
-    // await firestore.collection()
   });
   afterAll(async () => {
     await Promise.all(firebase.apps().map(app => app.delete()));
   });
+  beforeEach(async () => {
+    await clearFirestoreDatabase(testProjectId);
 
-  test.skip('test if it can read variable in beforeEach', async () => {
-    // const a = await firebaseAPIinstance.getTagList();
-    // console.log(a);
+    // add data
+    await addFakeDatatoFirestore(firestore);
   });
-}); */
+
+  test('test `getTagList`', async () => {
+    const tagDataList = await firebaseAPIinstance.getTagList();
+    // console.log(tagDataList);
+    expect(tagDataList).toEqual(expect.any(Array));
+
+    // if use `toEqual`, the f field must included in the test object
+    expect(tagDataList[0]).toMatchObject({
+      id: fakeDataId,
+      locationName: fakeTagData.locationName,
+      accessibility: fakeTagData.accessibility,
+      category: {
+        missionName: expect.any(String),
+        subTypeName: expect.any(String),
+        targetName: expect.any(String),
+      },
+      coordinates: expect.any(firebase.firestore.GeoPoint),
+    });
+  });
+});

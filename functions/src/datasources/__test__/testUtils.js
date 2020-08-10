@@ -1,5 +1,6 @@
 const firebase = require('@firebase/testing');
 const { GeoFirestore } = require('geofirestore');
+const axios = require('axios').default;
 
 const fakeDataId = 'test-fakedata-id';
 
@@ -97,9 +98,21 @@ async function addFakeDatatoFirestore(firestore) {
     .set(fakeTagDetailData);
 }
 
+/**
+ * clear database
+ * ref: https://firebase.google.com/docs/emulator-suite/connect_firestore#clear_your_database_between_tests
+ * @param {String} databaseID the id of the firestore emulator
+ */
+async function clearFirestoreDatabase(databaseID) {
+  const clearURL = `http://localhost:8080/emulator/v1/projects/${databaseID}/databases/(default)/documents`;
+  await axios.delete(clearURL);
+  // console.log('clear response:', res.status);
+}
+
 exports.mockFirebaseAdmin = mockFirebaseAdmin;
 exports.addFakeDatatoFirestore = addFakeDatatoFirestore;
 exports.fakeTagData = fakeTagData;
 exports.fakeDetailFromTagData = fakeDetailFromTagData;
 exports.fakeDataId = fakeDataId;
 exports.fakeCategory = fakeCategory;
+exports.clearFirestoreDatabase = clearFirestoreDatabase;

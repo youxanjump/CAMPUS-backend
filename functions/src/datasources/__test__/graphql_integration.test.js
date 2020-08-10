@@ -12,13 +12,13 @@ const {
   mockFirebaseAdmin,
   addFakeDatatoFirestore,
   fakeDetailFromTagData,
-} = require('./mockFirebaseAdmin');
+  clearFirestoreDatabase,
+} = require('./testUtils');
 
 const testProjectId = 'smartcampus-1b31f-graphql-test';
 
 describe('test graphql query', () => {
   let queryClient;
-  let mutateClient;
   let firestore;
   beforeAll(async () => {
     // set up firebase admin
@@ -26,9 +26,8 @@ describe('test graphql query', () => {
 
     // set up apollo server and test client
     const server = apolloServer({ admin });
-    const { query, mutate } = createTestClient(server);
+    const { query } = createTestClient(server);
     queryClient = query;
-    mutateClient = mutate;
 
     // set up fake data to firestore
     firestore = admin.firestore();
@@ -36,6 +35,12 @@ describe('test graphql query', () => {
   });
   afterAll(async () => {
     await Promise.all(firebase.apps().map(app => app.delete()));
+  });
+  beforeEach(async () => {
+    await clearFirestoreDatabase(testProjectId);
+
+    // add data
+    await addFakeDatatoFirestore(firestore);
   });
 
   test('test query tagRenderList', async () => {
@@ -61,7 +66,7 @@ describe('test graphql query', () => {
     const tagRenderListResult = result.data.tagRenderList;
     expect(tagRenderListResult).toEqual(expect.any(Array));
     // console.log(tagRenderListResult);
-    expect(tagRenderListResult).toContainEqual({
+    expect(tagRenderListResult[0]).toMatchObject({
       id: fakeDataId,
       locationName: fakeTagData.locationName,
       accessibility: fakeTagData.accessibility,
@@ -116,6 +121,30 @@ describe('test graphql query', () => {
       lastUpdateTime: expect.any(firebase.firestore.Timestamp),
     });
   });
+});
+
+describe('test graphql mutate', () => {
+  let mutateClient;
+  let firestore;
+  beforeAll(() => {
+    // set up firebase admin
+    const admin = mockFirebaseAdmin(testProjectId);
+
+    // set up apollo server and test client
+    const server = apolloServer({ admin });
+    const { mutate } = createTestClient(server);
+    mutateClient = mutate;
+
+    // set up fake data to firestore
+    firestore = admin.firestore();
+  });
+  afterAll(async () => {
+    await Promise.all(firebase.apps().map(app => app.delete()));
+  });
+  beforeEach(async () => {
+    await clearFirestoreDatabase(testProjectId);
+  });
+
   test('test mutate tag data', async () => {
     const mutateTag = gql`
       mutation tagUpdateTest($data: AddNewTagDataInput!) {
