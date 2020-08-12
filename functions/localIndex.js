@@ -1,12 +1,13 @@
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 const admin = require('firebase-admin');
-const apolloServer = require('./src');
 const express = require('express');
 const { express: voyagerMiddleware } = require('graphql-voyager/middleware');
 
+const apolloServer = require('./src');
+
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
-  storageBucket: 'smartcampus-1b31f.appspot.com',
+  storageBucket: 'gs://smartcampus-1b31f.appspot.com',
 });
 
 const app = express();
