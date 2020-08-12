@@ -18,6 +18,8 @@ const typeDefs = gql`
     category: Category
     coordinates: Coordinate
     tagDetail: TagDetail
+    status: Status
+    statusHistory: [Status]!
   }
 
   type Category {
@@ -34,6 +36,12 @@ const typeDefs = gql`
     description: String
     imageUrl: [String]
     streetViewInfo: StreetView
+  }
+
+  type Status {
+    statusName: String!
+    createTime: String!
+    createUser: User
   }
 
   type User {
@@ -93,10 +101,10 @@ const typeDefs = gql`
   }
 
   input AddNewTagDataInput {
-    locationName: String
+    locationName: String!
     accessibility: Float
-    category: CategoryInput
-    coordinates: CoordinateInput
+    category: CategoryInput!
+    coordinates: CoordinateInput!
     description: String
     imageNumber: Int
     streetViewInfo: StreetViewInput
@@ -108,8 +116,11 @@ const typeDefs = gql`
   }
 
   input CategoryInput {
+    "設施任務/問題任務/動態任務"
     missionName: String!
+    "**類型"
     subTypeName: String
+    "具體**"
     targetName: String
   }
 
