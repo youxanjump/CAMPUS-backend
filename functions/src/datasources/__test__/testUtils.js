@@ -1,5 +1,4 @@
 const firebase = require('@firebase/testing');
-const { GeoFirestore } = require('geofirestore');
 const axios = require('axios').default;
 
 const fakeDataId = 'test-fakedata-id';
@@ -18,6 +17,7 @@ const fakeStreetViewData = {
   longitude: 120.9969249,
 };
 
+// the fake data will input from front end
 const fakeTagData = {
   locationName: 'test',
   accessibility: 5,
@@ -28,11 +28,17 @@ const fakeTagData = {
   ),
 };
 
+// the fake data will input from front end
 const fakeDetailFromTagData = {
   description: 'test-description',
   // [longitude, latitude]
   coordinates: ['120.99745541810988', '24.786671229129603'],
   streetViewInfo: { ...fakeStreetViewData },
+};
+
+const fakeStatusData = {
+  statusName: '存在',
+  createTime: firebase.firestore.FieldValue.serverTimestamp(),
 };
 
 /**
@@ -66,36 +72,22 @@ function mockFirebaseAdmin(projectId) {
 
 /**
  * Add fakeData to firestore
- * @param {Firestore} firestore Firestore instance to add fake data
+ * @param {FirebaseAPI} firestore Firestore instance to add fake data
+ * @return {AddNewTagResponse} Contain the upload tag information, and image
  */
-async function addFakeDatatoFirestore(firestore) {
-  await firestore.collection('missionList').doc('mission-test').set({
-    name: '無障礙設施',
-  });
-  await firestore.collection('discoveryList').doc('discovery-test').set({
-    missionID: 'mission-test',
-    name: '障礙物',
-  });
-
-  const geofirestore = new GeoFirestore(firestore);
-  await geofirestore.collection('tagData').doc(fakeDataId).set(fakeTagData);
-
-  const fakeTagDetailData = {
-    createTime: firebase.firestore.FieldValue.serverTimestamp(),
-    lastUpdateTime: firebase.firestore.FieldValue.serverTimestamp(),
-    createUserID: 'test',
-    location: {
-      geoInfo: {
-        type: 'Point',
-        coordinates: fakeDetailFromTagData.coordinates,
-      },
+async function addFakeDatatoFirestore(firebaseAPIinstance) {
+  const data = {
+    ...fakeTagData,
+    coordinates: {
+      latitude: fakeDetailFromTagData.coordinates[1],
+      longitude: fakeDetailFromTagData.coordinates[0],
     },
-    description: fakeDetailFromTagData.description || '',
+    description: fakeDetailFromTagData.description,
+    streetViewInfo: fakeDetailFromTagData.streetViewInfo,
+    imageNumber: 2,
   };
-  await firestore
-    .collection('tagDetail')
-    .doc(fakeDataId)
-    .set(fakeTagDetailData);
+
+  return firebaseAPIinstance.addNewTagData({ data });
 }
 
 /**
@@ -115,4 +107,5 @@ exports.fakeTagData = fakeTagData;
 exports.fakeDetailFromTagData = fakeDetailFromTagData;
 exports.fakeDataId = fakeDataId;
 exports.fakeCategory = fakeCategory;
+exports.fakeStatusData = fakeStatusData;
 exports.clearFirestoreDatabase = clearFirestoreDatabase;

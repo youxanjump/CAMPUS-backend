@@ -27,10 +27,78 @@ function getImageUploadUrls(bucket, imageNumber, tagID) {
 
   const fileNameArray = generateFileName(imageNumber, tagID);
 
-  return fileNameArray.map(async (name) => {
+  return fileNameArray.map(async name => {
     const [url] = await bucket.file(name).getSignedUrl(options);
     return url;
   });
 }
 
+function getDefaultStatus(missionName) {
+  switch (missionName) {
+    case '設施任務':
+      return '存在';
+    case '障礙任務':
+      return '待處理';
+    case '狀態任務':
+      return '人少';
+    default:
+      return '';
+  }
+}
+
+/**
+ * Get latest status of current tag document `status` collection
+ * @param {DocumentReference} docRef The document we want to get the latest
+ *   status
+ */
+async function getLatestStatus(docRef) {
+  const statusDocSnap = await docRef
+    .collection('status')
+    .orderBy('createTime', 'desc')
+    .limit(1)
+    .get();
+  const statusRes = [];
+  statusDocSnap.forEach(doc => {
+    statusRes.push(doc.data());
+  });
+  const [currentStatus] = statusRes;
+  return currentStatus;
+}
+
+/**
+ * TODO: add paginate function
+ * Get status history of current tag document `status` collection
+ * @param {DocumentReference} docRef The document we want to get the latest
+ *   status
+ */
+async function getStatusHistory(docRef) {
+  const statusDocSnap = await docRef
+    .collection('status')
+    .orderBy('createTime', 'desc')
+    .get();
+  const statusRes = [];
+  statusDocSnap.forEach(doc => {
+    statusRes.push(doc.data());
+  });
+  return statusRes;
+}
+
+/**
+ * Extract data from tag document reference
+ * @param {DocumentReference} docRef The document we want to get the data
+ */
+async function getDataFromTagDocRef(docRef) {
+  const data = {
+    id: docRef.id,
+    status: await getLatestStatus(docRef),
+    statusHistory: await getStatusHistory(docRef),
+    ...(await docRef.get()).data(),
+  };
+  return data;
+}
+
 exports.getImageUploadUrls = getImageUploadUrls;
+exports.getDefaultStatus = getDefaultStatus;
+exports.getLatestStatus = getLatestStatus;
+exports.getStatusHistory = getStatusHistory;
+exports.getDataFromTagDocRef = getDataFromTagDocRef;

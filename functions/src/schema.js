@@ -80,6 +80,7 @@ const typeDefs = gql`
     #tagUpdate(data: TagUpdateInput!): TagUpdateResponse!
     #tagImageUrlAdd(id: ID, imageUrl: [String]!): TagDetail!
     addNewTagData(data: AddNewTagDataInput!): AddNewTagResponse
+    updateTagStatus(tagId: ID!, statusName: String!): Status!
   }
 
   type AddNewTagResponse {

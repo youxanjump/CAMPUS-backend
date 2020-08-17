@@ -21,6 +21,9 @@ module.exports = {
         return dataSources.firebaseAPI.addNewTagData({ data, me });
       }
     ),
+    updateTagStatus: async (_, { tagId, statusName }, { dataSources }) => {
+      return dataSources.firebaseAPI.updateTagStatus({ tagId, statusName });
+    },
   },
   Tag: {
     tagDetail: async (tag, _, { dataSources }) =>
@@ -32,6 +35,9 @@ module.exports = {
     lastUpdateTime: async (tagDetail, _, __) =>
       tagDetail.lastUpdateTime.toDate().toString(),
     createUser: async (tagDetail, _, __) => tagDetail.createUserID,
+  },
+  Status: {
+    createTime: async (status, _, __) => status.createTime.toDate().toString(),
   },
   User: {
     id: async (userId, _, __) => userId,
