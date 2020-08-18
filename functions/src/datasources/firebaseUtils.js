@@ -15,7 +15,7 @@ function generateFileName(imageNumber, tagID) {
  * @param {String} tagID
  * @returns {Promise[]} an array contain singed urls with length `imageNumber`
  */
-function getImageUploadUrls(bucket, imageNumber, tagID) {
+async function getImageUploadUrls(bucket, imageNumber, tagID) {
   // These options will allow temporary uploading of the file with outgoing
   // Content-Type: application/octet-stream header.
   const options = {
