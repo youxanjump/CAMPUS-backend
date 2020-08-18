@@ -2,7 +2,6 @@ const { gql } = require('apollo-server');
 
 const typeDefs = gql`
   # schema definition
-  scalar JSON
 
   type Query {
     tagRenderList: [Tag]
@@ -14,11 +13,13 @@ const typeDefs = gql`
 
   type Tag {
     id: ID!
-    title: String
+    locationName: String
     accessibility: Float
     category: Category
     coordinates: Coordinate
     tagDetail: TagDetail
+    status: Status
+    statusHistory: [Status]!
   }
 
   type Category {
@@ -32,20 +33,21 @@ const typeDefs = gql`
     createTime: String
     lastUpdateTime: String
     createUser: User
-    location: Location
     description: String
     imageUrl: [String]
     streetViewInfo: StreetView
+  }
+
+  type Status {
+    statusName: String!
+    createTime: String!
+    createUser: User
   }
 
   type User {
     id: ID!
     name: String
     email: String
-  }
-
-  type Location {
-    geoInfo: JSON # import json type
   }
 
   type Coordinate {
@@ -78,6 +80,7 @@ const typeDefs = gql`
     #tagUpdate(data: TagUpdateInput!): TagUpdateResponse!
     #tagImageUrlAdd(id: ID, imageUrl: [String]!): TagDetail!
     addNewTagData(data: AddNewTagDataInput!): AddNewTagResponse
+    updateTagStatus(tagId: ID!, statusName: String!): Status!
   }
 
   type AddNewTagResponse {
@@ -92,19 +95,20 @@ const typeDefs = gql`
     id: ID
     "true if modifing existing tag; false if creaing new tag"
     modify: Boolean!
-    title: String
+    locationName: String
     accessibility: Float
     coordinates: CoordinateInput
     description: String
   }
 
   input AddNewTagDataInput {
-    title: String
+    locationName: String!
     accessibility: Float
-    category: CategoryInput
-    coordinates: CoordinateInput
+    category: CategoryInput!
+    coordinates: CoordinateInput!
     description: String
     imageNumber: Int
+    streetViewInfo: StreetViewInput
   }
 
   input CoordinateInput {
@@ -113,9 +117,20 @@ const typeDefs = gql`
   }
 
   input CategoryInput {
+    "設施任務/問題任務/動態任務"
     missionName: String!
+    "**類型"
     subTypeName: String
+    "具體**"
     targetName: String
+  }
+
+  input StreetViewInput {
+    povHeading: Float!
+    povPitch: Float!
+    panoID: String!
+    latitude: Float!
+    longitude: Float!
   }
 `;
 
