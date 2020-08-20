@@ -59,10 +59,13 @@ async function uploadImageProcessing(admin, object) {
   await sharp(tempFilePath).jpeg().toFile(newFilePath);
 
   // upload converted file
-  await bucket.upload(newFilePath, {
+  const [uploadFileRef] = await bucket.upload(newFilePath, {
     destination: path.join(tagId, newFileName),
     metadata: newFileMetadata,
   });
+
+  // make this converted file(image) public
+  await uploadFileRef.makePublic();
 
   // delete files
   fs.unlinkSync(tempFilePath);

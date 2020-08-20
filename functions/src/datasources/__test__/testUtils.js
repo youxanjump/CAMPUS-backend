@@ -60,6 +60,16 @@ function mockFirebaseAdmin(projectId) {
           }),
         };
       }),
+      getFiles: jest.fn(options => {
+        const { directory } = options;
+        return [
+          [
+            {
+              metadata: { mediaLink: `http://${directory}.medialink` },
+            },
+          ],
+        ];
+      }),
     };
   });
   admin.storage = jest.fn(() => ({

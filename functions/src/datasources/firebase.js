@@ -80,6 +80,23 @@ class FirebaseAPI extends DataSource {
     return displayName;
   }
 
+  /** *** storage *** */
+
+  /**
+   * Get image urls of specific tag
+   * @param {object} param
+   * @param {string} param.tagID the ID of the tag
+   * @returns {string[]} the image links of the current tag
+   */
+  async getImageUrls({ tagID }) {
+    const options = {
+      directory: tagID,
+    };
+    const [files] = await this.bucket.getFiles(options);
+
+    return files.map(file => file.metadata.mediaLink);
+  }
+
   /** *** firestore *** */
 
   /**

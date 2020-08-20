@@ -123,7 +123,6 @@ describe('test graphql query', () => {
       variables: { id: fakeTagId },
     });
     const tagDetailResult = result.data.tagDetail;
-    // console.log(tagDetailResult);
     expect(tagDetailResult).toMatchObject({
       tagID: fakeTagId,
       createTime: expect.any(String),
@@ -132,6 +131,7 @@ describe('test graphql query', () => {
         id: expect.any(String),
       },
       description: expect.any(String),
+      imageUrl: [expect.any(String)],
     });
     const dataInFirestore = (
       await firestore.collection('tagDetail').doc(fakeTagId).get()
