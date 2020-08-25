@@ -7,8 +7,8 @@ const typeDefs = gql`
     tagRenderList: [Tag]
     tag(id: ID!): Tag
     tagDetail(id: ID!): TagDetail
-    missionList: [Mission]
-    discoveryList: [Discovery]
+    missionList: [Mission] @deprecated(reason: "replace by category")
+    discoveryList: [Discovery] @deprecated(reason: "replace by category")
   }
 
   type Tag {
