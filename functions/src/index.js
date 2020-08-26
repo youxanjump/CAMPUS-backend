@@ -1,8 +1,8 @@
 /** @module src/index */
 const { ApolloServer } = require('apollo-server-express');
 
-const typeDefs = require('./schema');
-const resolvers = require('./resolvers');
+const typeDefs = require('./schema/schema');
+const resolvers = require('./resolvers/resolvers');
 const FirebaseAPI = require('./datasources/firebase');
 
 /**
