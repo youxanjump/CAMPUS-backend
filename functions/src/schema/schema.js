@@ -18,12 +18,15 @@ const {
   StreetViewInput,
 } = require('./map_schema');
 
+const { Intent, Question } = require('./chatbot_schema');
+
 const Query = `type Query {
   tagRenderList: [Tag]
   tag(id: ID!): Tag
   tagDetail(id: ID!): TagDetail
   missionList: [Mission]
   discoveryList: [Discovery]
+  intentAnswer(intent: String!): String
 }`;
 
 const Mutation = `type Mutation {
@@ -31,26 +34,31 @@ const Mutation = `type Mutation {
   #tagImageUrlAdd(id: ID, imageUrl: [String]!): TagDetail!
   addNewTagData(data: AddNewTagDataInput!): AddNewTagResponse
   updateTagStatus(tagId: ID!, statusName: String!): Status!
+  addNewIntent(userIntent: String!, userAnswer: String!): String
 }`;
 
 const typeDefs = gql(
-  Query.concat(`
-    \n${Tag}
-    \n${Category}
-    \n${TagDetail}
-    \n${Status}
-    \n${User}
-    \n${Coordinate}
-    \n${StreetView}
-    \n${Mission}
-    \n${Discovery}
-    \n${Mutation}
-    \n${AddNewTagResponse}
-    \n${TagUpdateInput}
-    \n${AddNewTagDataInput}
-    \n${CoordinateInput}
-    \n${CategoryInput}
-    \n${StreetViewInput}`)
+  [
+    Query,
+    Tag,
+    Category,
+    TagDetail,
+    Status,
+    User,
+    Coordinate,
+    StreetView,
+    Mission,
+    Discovery,
+    Intent,
+    Question,
+    Mutation,
+    AddNewTagResponse,
+    TagUpdateInput,
+    AddNewTagDataInput,
+    CoordinateInput,
+    CategoryInput,
+    StreetViewInput,
+  ].join('\n')
 );
 
 module.exports = typeDefs;

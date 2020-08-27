@@ -213,6 +213,19 @@ class FirebaseAPI extends DataSource {
   }
 
   /**
+   * get the answer of the user's question
+   * @param {String} param.userIntent the intent that user's question meaning
+   */
+  async getAnswer({ userIntent }) {
+    const queryIntent = await this.firestore
+      .collection('intent')
+      .where('userIntent', '==', userIntent)
+      .get();
+    // console.log(target_intent);
+    return queryIntent.u_answer;
+  }
+
+  /**
    * Add tag detail data to collection `tagDetailData` in firestore
    * @param {object} param
    * @param {String} param.tagID the id of the tag
@@ -323,6 +336,19 @@ class FirebaseAPI extends DataSource {
       .add(statusData);
 
     return (await docRef.get()).data();
+  }
+
+  /**
+   * Add user's FAQ or some other question and answer
+   * @param {String} param.userIntent
+   * @param {String} param.userAnswer
+   */
+  async addNewIntent({ userIntent, userAnswer }) {
+    await this.firestore.collection('intent').add({
+      userIntent,
+      userAnswer,
+    });
+    return 'finish add new intent';
   }
 } // class FirebaseAPI
 
