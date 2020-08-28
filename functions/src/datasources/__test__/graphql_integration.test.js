@@ -5,7 +5,7 @@ const firebase = require('@firebase/testing');
 const { createTestClient } = require('apollo-server-testing');
 const gql = require('graphql-tag');
 
-const apolloServer = require('../../index');
+const apolloServer = require('./apolloTestServer');
 const FirebaseAPI = require('../firebase');
 const {
   fakeTagData,
