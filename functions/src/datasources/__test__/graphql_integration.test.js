@@ -112,6 +112,7 @@ describe('test graphql query', () => {
           lastUpdateTime
           createUser {
             uid
+            displayName
           }
           description
           imageUrl
@@ -129,6 +130,7 @@ describe('test graphql query', () => {
       lastUpdateTime: expect.any(String),
       createUser: {
         uid: fakeUserInfo.uid,
+        displayName: fakeUserInfo.displayName,
       },
       description: expect.any(String),
       imageUrl: [expect.any(String)],

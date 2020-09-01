@@ -32,7 +32,7 @@ module.exports = {
   },
   User: {
     uid: async ({ uid }, _, __) => uid,
-    displayName: async (uid, _, { dataSources }) =>
+    displayName: async ({ uid }, _, { dataSources }) =>
       dataSources.firebaseAPI.getUserName({ uid }),
   },
   Mission: {
