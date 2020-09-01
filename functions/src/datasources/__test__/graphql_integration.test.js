@@ -142,6 +142,35 @@ describe('test graphql query', () => {
       lastUpdateTime: expect.any(firebase.firestore.Timestamp),
     });
   });
+  test('test query userAddTagHistory', async () => {
+    const { uid } = fakeUserInfo;
+    const queryUserAddTagHistory = gql`
+      query testQueyUserAddTagHistory($uid: ID!) {
+        userAddTagHistory(uid: $uid) {
+          id
+          createUser {
+            uid
+          }
+          description
+          imageUrl
+        }
+      }
+    `;
+    const result = await queryClient({
+      query: queryUserAddTagHistory,
+      variables: { uid },
+    });
+    const tagResult = result.data.userAddTagHistory;
+    expect(tagResult).toEqual(expect.any(Array));
+    expect(tagResult[0]).toMatchObject({
+      id: fakeTagId,
+      createUser: {
+        uid: fakeUserInfo.uid,
+      },
+      description: expect.any(String),
+      imageUrl: [expect.any(String)],
+    });
+  });
 });
 
 describe('test graphql mutate', () => {

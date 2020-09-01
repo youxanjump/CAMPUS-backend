@@ -4,6 +4,8 @@ module.exports = {
       dataSources.firebaseAPI.getTagList(),
     tag: async (_, { id }, { dataSources }) =>
       dataSources.firebaseAPI.getTagData({ id }),
+    userAddTagHistory: async (_, { uid }, { dataSources }) =>
+      dataSources.firebaseAPI.getUserAddTagHistory({ uid }),
     missionList: async (_, __, { dataSources }) =>
       dataSources.firebaseAPI.getList('missionList'),
     discoveryList: async (_, __, { dataSources }) =>
