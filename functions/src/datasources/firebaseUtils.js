@@ -37,9 +37,9 @@ function getDefaultStatus(missionName) {
   switch (missionName) {
     case '設施任務':
       return '存在';
-    case '障礙任務':
+    case '問題任務':
       return '待處理';
-    case '狀態任務':
+    case '動態任務':
       return '人少';
     default:
       return '';
