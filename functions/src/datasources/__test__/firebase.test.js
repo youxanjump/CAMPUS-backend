@@ -7,6 +7,7 @@ const {
   mockFirebaseAdmin,
   fakeTagData,
   fakeStatusData,
+  fakeUserInfo,
   addFakeDataToFirestore,
   clearFirestoreDatabase,
 } = require('./testUtils');
@@ -29,7 +30,7 @@ describe('test data add operation', () => {
   });
   test('test `addTagDataToFirestore`', async () => {
     const data = { ...fakeTagData };
-    const uid = 'test-uid';
+    const { uid } = fakeUserInfo;
 
     const docData = await firebaseAPIinstance.addTagDataToFirestore({
       data,
@@ -43,7 +44,6 @@ describe('test data add operation', () => {
       accessibility: data.accessibility,
       coordinates: data.coordinates,
       category: data.category,
-      uid,
       status: {
         statusName: fakeStatusData.statusName,
         createTime: expect.any(firebase.firestore.Timestamp),
@@ -56,7 +56,7 @@ describe('test data add operation', () => {
       ],
       createTime: expect.any(firebase.firestore.Timestamp),
       lastUpdateTime: expect.any(firebase.firestore.Timestamp),
-      createUserID: expect.any(String),
+      createUserID: uid,
       description: data.description,
       streetViewInfo: data.streetViewInfo,
     });
@@ -126,6 +126,29 @@ describe('test data read operation', () => {
 
   test('test `getTagList`', async () => {
     const tagDataList = await firebaseAPIinstance.getTagList();
+    // console.log(tagDataList);
+    expect(tagDataList).toEqual(expect.any(Array));
+
+    // if use `toEqual`, the f field must included in the test object
+    expect(tagDataList[0]).toMatchObject({
+      id: expect.any(String),
+      locationName: fakeTagData.locationName,
+      accessibility: fakeTagData.accessibility,
+      category: {
+        missionName: expect.any(String),
+        subTypeName: expect.any(String),
+        targetName: expect.any(String),
+      },
+      coordinates: expect.any(firebase.firestore.GeoPoint),
+      status: {
+        statusName: fakeStatusData.statusName,
+        createTime: expect.any(firebase.firestore.Timestamp),
+      },
+    });
+  });
+  test('test `getUserAddTagHistory`', async () => {
+    const { uid } = fakeUserInfo;
+    const tagDataList = await firebaseAPIinstance.getUserAddTagHistory({ uid });
     // console.log(tagDataList);
     expect(tagDataList).toEqual(expect.any(Array));
 

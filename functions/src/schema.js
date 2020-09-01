@@ -6,6 +6,7 @@ const typeDefs = gql`
   type Query {
     tagRenderList: [Tag]
     tag(id: ID!): Tag
+    userAddTagHistory(uid: ID!): [Tag]!
     missionList: [Mission] @deprecated(reason: "replace by category")
     discoveryList: [Discovery] @deprecated(reason: "replace by category")
   }

@@ -150,6 +150,26 @@ class FirebaseAPI extends DataSource {
   }
 
   /**
+   * Return data list from collection `tagData` of the specific user
+   * @async
+   * @param {object} param
+   * @param {string} param.uid User id of the specific user.
+   * @returns {object} Data with id
+   */
+  async getUserAddTagHistory({ uid }) {
+    const list = [];
+    const querySnapshot = await this.firestore
+      .collection('tagData')
+      .where('createUserID', '==', uid)
+      .orderBy('createTime', 'desc')
+      .get();
+    querySnapshot.forEach(doc => {
+      list.push(getDataFromTagDocRef(doc.ref));
+    });
+    return Promise.all(list);
+  }
+
+  /**
    * get tag detail from collection `tag_detail`
    * @async
    * @param {object} param
@@ -264,7 +284,6 @@ class FirebaseAPI extends DataSource {
       locationName,
       accessibility,
       category,
-      uid,
       coordinates: new this.admin.firestore.GeoPoint(
         parseFloat(coordinates.latitude),
         parseFloat(coordinates.longitude)
