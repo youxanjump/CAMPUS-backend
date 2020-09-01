@@ -6,7 +6,6 @@ const typeDefs = gql`
   type Query {
     tagRenderList: [Tag]
     tag(id: ID!): Tag
-    tagDetail(id: ID!): TagDetail
     missionList: [Mission] @deprecated(reason: "replace by category")
     discoveryList: [Discovery] @deprecated(reason: "replace by category")
   }
@@ -17,7 +16,12 @@ const typeDefs = gql`
     accessibility: Float
     category: Category
     coordinates: Coordinate
-    tagDetail: TagDetail
+    createTime: String
+    lastUpdateTime: String
+    createUser: User
+    description: String
+    imageUrl: [String]
+    streetViewInfo: StreetView
     status: Status
     statusHistory: [Status]!
   }
@@ -28,16 +32,6 @@ const typeDefs = gql`
     targetName: String
   }
 
-  type TagDetail {
-    tagID: ID!
-    createTime: String
-    lastUpdateTime: String
-    createUser: User
-    description: String
-    imageUrl: [String]
-    streetViewInfo: StreetView
-  }
-
   type Status {
     statusName: String!
     createTime: String!
@@ -45,8 +39,9 @@ const typeDefs = gql`
   }
 
   type User {
-    id: ID!
-    name: String
+    uid: ID!
+    displayName: String
+    "only available to user itself?need authorization mechanism"
     email: String
   }
 
@@ -59,8 +54,8 @@ const typeDefs = gql`
     povHeading: Float!
     povPitch: Float!
     panoID: String!
-    latitude: Float!
-    longitude: Float!
+    cameraLatitude: Float!
+    cameraLongitude: Float!
   }
 
   type Mission {

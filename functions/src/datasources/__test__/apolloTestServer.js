@@ -26,12 +26,14 @@ function apolloTestServer({ admin, logIn }) {
     },
     context: async () => {
       if (logIn) {
-        return fakeUserInfo;
+        return { userInfo: fakeUserInfo };
       }
       return {
-        logIn: false,
-        uid: 'anonymous',
-        displayName: 'anonymous',
+        userInfo: {
+          logIn: false,
+          uid: 'anonymous',
+          displayName: 'anonymous',
+        },
       };
     },
   });

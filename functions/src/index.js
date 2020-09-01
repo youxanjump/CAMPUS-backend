@@ -24,14 +24,14 @@ function apolloServer({ admin }) {
       console.log(error);
       return error;
     },
-    /*
     context: async ({ req }) => {
-      const me = await dataSources().firebaseAPI.getToken(req);
+      const userInfo = await dataSources().firebaseAPI.getUserInfoFromToken(
+        req
+      );
       return {
-        me,
+        userInfo,
       };
     },
-    */
     introspection: true, // enables introspection of the schema
     playground: true, // enables the actual playground
   });

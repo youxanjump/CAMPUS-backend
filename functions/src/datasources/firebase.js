@@ -1,5 +1,6 @@
 /** @module Firebase */
 const { DataSource } = require('apollo-datasource');
+const { ForbiddenError } = require('apollo-server');
 const { AuthenticationError } = require('apollo-server-express');
 // geofirestore
 const { GeoFirestore } = require('geofirestore');
@@ -50,24 +51,39 @@ class FirebaseAPI extends DataSource {
    */
 
   /**
-   * get token from reqeust header and verify
+   * Verify token from reqeust header and return user object
    * @async
    * @param {object} - request
    * @returns {DecodedIdToken} - have `uid` properity which specify
    *  the uid of the user.
    */
-  async getToken(req) {
+  async getUserInfoFromToken(req) {
     const { authorization } = req.headers;
 
     if (authorization) {
       const token = authorization.replace('Bearer ', '');
       try {
-        return await this.auth.verifyIdToken(token);
+        // verifyIdToken return DecodedIdToken
+        // https://firebase.google.com/docs/reference/admin/node/admin.auth.DecodedIdToken
+        const { uid, email } = await this.auth.verifyIdToken(token);
+        // getUser return UserRecord
+        // https://firebase.google.com/docs/reference/admin/node/admin.auth.UserRecord
+        const { displayName } = await this.auth.getUser(uid);
+        return {
+          logIn: true,
+          uid,
+          email,
+          displayName: displayName || uid,
+        };
       } catch (e) {
         throw new AuthenticationError(e);
       }
     }
-    throw new AuthenticationError('no authorization info in header');
+    return {
+      logIn: false,
+      uid: 'anonymous',
+      displayName: 'anonymous',
+    };
   }
 
   /**
@@ -140,13 +156,13 @@ class FirebaseAPI extends DataSource {
    * @param {string} param.tagID tagID of the document with detailed info.
    * @returns {object|null} Object of document data in collection `tagDetail`
    */
-  async getTagDetail({ tagID }) {
-    const doc = await this.firestore.collection('tagDetail').doc(tagID).get();
+  async getTagData({ id }) {
+    const doc = await this.firestore.collection('tagData').doc(id).get();
     if (!doc.exists) {
       return null;
     }
     return {
-      tagID: doc.id,
+      id: doc.id,
       ...doc.data(),
     };
   }
@@ -237,21 +253,7 @@ class FirebaseAPI extends DataSource {
    *  be added to tagDetail document
    * @return {undefined}
    */
-  async setTagDetailToFirestore({ tagID, data }) {
-    const tagDetailRef = this.firestore.collection('tagDetail');
-
-    const { description, streetViewInfo } = data;
-
-    const tagDetail = {
-      createTime: this.admin.firestore.FieldValue.serverTimestamp(),
-      lastUpdateTime: this.admin.firestore.FieldValue.serverTimestamp(),
-      createUserID: 'test',
-      description: description || '',
-      streetViewInfo: streetViewInfo || null,
-    };
-    // add tagDetail to server
-    return tagDetailRef.doc(tagID).set(tagDetail);
-  }
+  // async setTagDetailToFirestore({ tagID, data }) {}
 
   /**
    * Add tag data to collection `tagData` in firestore
@@ -259,16 +261,30 @@ class FirebaseAPI extends DataSource {
    * @param {object} param.tagData contain the necessary filed should
    *  be added to tagData document
    */
-  async addTagDataToFirestore({ data }) {
-    const { locationName, accessibility, coordinates, category } = data;
+  async addTagDataToFirestore({ data, uid }) {
+    const {
+      locationName,
+      accessibility,
+      coordinates,
+      category,
+      description,
+      streetViewInfo,
+    } = data;
     const tagData = {
       locationName,
       accessibility,
       category,
+      uid,
       coordinates: new this.admin.firestore.GeoPoint(
         parseFloat(coordinates.latitude),
         parseFloat(coordinates.longitude)
       ),
+      // originally tagDetail
+      createTime: this.admin.firestore.FieldValue.serverTimestamp(),
+      lastUpdateTime: this.admin.firestore.FieldValue.serverTimestamp(),
+      createUserID: uid,
+      description: description || '',
+      streetViewInfo: streetViewInfo || null,
     };
     const defaultStatus = {
       statusName: getDefaultStatus(category.missionName),
@@ -299,18 +315,20 @@ class FirebaseAPI extends DataSource {
    * @return {AddNewTagResponse} Contain the upload tag information, and image
    *  related information
    */
-  async addNewTagData({ data, _me }) {
-    const { imageNumber } = data;
-    const tagDataDocumentData = await this.addTagDataToFirestore({ data });
+  async addNewTagData({ data, userInfo }) {
+    // check user status
+    const { logIn, uid } = userInfo;
+    if (!logIn) {
+      // TODO: anonymous user data or throw authorize error
+      throw new ForbiddenError('User is not login');
+    }
+    // add tagData to firestore
+    const tagDataDocumentData = await this.addTagDataToFirestore({ data, uid });
 
+    // retrieve id of new added tag document
     const { id: tagDataDocumentID } = tagDataDocumentData;
 
-    // add tagDetail to server
-    await this.setTagDetailToFirestore({
-      tagID: tagDataDocumentID,
-      data,
-    });
-
+    const { imageNumber } = data;
     return {
       tag: tagDataDocumentData,
       imageNumber,
