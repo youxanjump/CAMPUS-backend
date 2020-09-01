@@ -1,50 +1,37 @@
-const { combineResolvers } = require('graphql-resolvers');
-
-// const { isAuthenticated, isTagOwner } = require('./authorization');
-
 module.exports = {
   Query: {
     tagRenderList: async (_, __, { dataSources }) =>
       dataSources.firebaseAPI.getTagList(),
-    tagDetail: async (_, { id }, { dataSources }) =>
-      dataSources.firebaseAPI.getTagDetail({ tagID: id }),
+    tag: async (_, { id }, { dataSources }) =>
+      dataSources.firebaseAPI.getTagData({ id }),
     missionList: async (_, __, { dataSources }) =>
       dataSources.firebaseAPI.getList('missionList'),
     discoveryList: async (_, __, { dataSources }) =>
       dataSources.firebaseAPI.getList('discoveryList'),
   },
   Mutation: {
-    addNewTagData: combineResolvers(
-      // isAuthenticated,
-      // isTagOwner,
-      async (_, { data }, { dataSources, me }) => {
-        return dataSources.firebaseAPI.addNewTagData({ data, me });
-      }
-    ),
+    addNewTagData: async (_, { data }, { dataSources, userInfo }) => {
+      return dataSources.firebaseAPI.addNewTagData({ data, userInfo });
+    },
     updateTagStatus: async (_, { tagId, statusName }, { dataSources }) => {
       return dataSources.firebaseAPI.updateTagStatus({ tagId, statusName });
     },
   },
   Tag: {
-    tagDetail: async (tag, _, { dataSources }) =>
-      dataSources.firebaseAPI.getTagDetail({ tagID: tag.id }),
-  },
-  TagDetail: {
-    createTime: async (tagDetail, _, __) =>
-      tagDetail.createTime.toDate().toString(),
-    lastUpdateTime: async (tagDetail, _, __) =>
-      tagDetail.lastUpdateTime.toDate().toString(),
-    createUser: async (tagDetail, _, __) => tagDetail.createUserID,
-    imageUrl: async (tagDetail, _, { dataSources }) =>
-      dataSources.firebaseAPI.getImageUrls({ tagID: tagDetail.tagID }),
+    createTime: async (tag, _, __) => tag.createTime.toDate().toString(),
+    lastUpdateTime: async (tag, _, __) =>
+      tag.lastUpdateTime.toDate().toString(),
+    createUser: async (tag, _, __) => ({ uid: tag.createUserID }),
+    imageUrl: async (tag, _, { dataSources }) =>
+      dataSources.firebaseAPI.getImageUrls({ tagID: tag.tagID }),
   },
   Status: {
     createTime: async (status, _, __) => status.createTime.toDate().toString(),
   },
   User: {
-    id: async (userId, _, __) => userId,
-    name: async (userId, _, { dataSources }) =>
-      dataSources.firebaseAPI.getUserName({ uid: userId }),
+    uid: async ({ uid }, _, __) => uid,
+    displayName: async (uid, _, { dataSources }) =>
+      dataSources.firebaseAPI.getUserName({ uid }),
   },
   Mission: {
     discoveries: async (mission, _, { dataSources }) =>

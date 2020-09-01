@@ -26,19 +26,25 @@ const fakeTagData = {
     24.786671229129603,
     120.99745541810988
   ),
-};
-
-// the fake data will input from front end
-const fakeDetailFromTagData = {
+  coordinatesString: {
+    longitude: '120.99745541810988',
+    latitude: '24.786671229129603',
+  },
   description: 'test-description',
   // [longitude, latitude]
-  coordinates: ['120.99745541810988', '24.786671229129603'],
   streetViewInfo: { ...fakeStreetViewData },
 };
 
 const fakeStatusData = {
   statusName: '存在',
   createTime: firebase.firestore.FieldValue.serverTimestamp(),
+};
+
+const fakeUserInfo = {
+  logIn: true,
+  uid: 'test-uid',
+  email: 'test-uid@test.com',
+  displayName: 'test-display-name',
 };
 
 /**
@@ -49,29 +55,38 @@ const fakeStatusData = {
 function mockFirebaseAdmin(projectId) {
   const admin = firebase.initializeAdminApp({ projectId });
   // mock auth
-  // TODO: convert this block to a function
-  admin.auth = jest.fn();
-  const mockBucket = jest.fn(() => {
-    return {
-      file: jest.fn(_ => {
-        return {
-          getSignedUrl: jest.fn(__ => {
-            return ['http://signed.url'];
-          }),
-        };
-      }),
-      getFiles: jest.fn(options => {
-        const { directory } = options;
-        return [
-          [
-            {
-              metadata: { mediaLink: `http://${directory}.medialink` },
-            },
-          ],
-        ];
-      }),
-    };
+  const mockAuthVerifyIdToken = jest.fn(_token => ({
+    uid: fakeUserInfo.uid,
+    email: fakeUserInfo.email,
+  }));
+  const mockAuthGetUser = jest.fn(_uid => ({
+    displayName: fakeUserInfo.displayName,
+  }));
+  admin.auth = jest.fn(() => ({
+    verifyIdToken: mockAuthVerifyIdToken,
+    getUser: mockAuthGetUser,
+  }));
+
+  // mock storage
+  const mockBuckeFile = jest.fn(_ => ({
+    getSignedUrl: jest.fn(__ => {
+      return ['http://signed.url'];
+    }),
+  }));
+  const mockBucketGetFiles = jest.fn(options => {
+    const { directory } = options;
+    return [
+      [
+        {
+          metadata: { mediaLink: `http://${directory}.medialink` },
+        },
+      ],
+    ];
   });
+  const mockBucket = jest.fn(() => ({
+    file: mockBuckeFile,
+    getFiles: mockBucketGetFiles,
+  }));
   admin.storage = jest.fn(() => ({
     bucket: mockBucket,
   }));
@@ -85,24 +100,20 @@ function mockFirebaseAdmin(projectId) {
  * @param {FirebaseAPI} firestore Firestore instance to add fake data
  * @return {AddNewTagResponse} Contain the upload tag information, and image
  */
-async function addFakeDatatoFirestore(firebaseAPIinstance) {
+async function addFakeDataToFirestore(firebaseAPIinstance) {
   const data = {
     ...fakeTagData,
-    coordinates: {
-      latitude: fakeDetailFromTagData.coordinates[1],
-      longitude: fakeDetailFromTagData.coordinates[0],
-    },
-    description: fakeDetailFromTagData.description,
-    streetViewInfo: fakeDetailFromTagData.streetViewInfo,
     imageNumber: 2,
   };
 
-  return firebaseAPIinstance.addNewTagData({ data });
+  return firebaseAPIinstance.addNewTagData({ data, userInfo: fakeUserInfo });
 }
 
 /**
  * clear database
  * ref: https://firebase.google.com/docs/emulator-suite/connect_firestore#clear_your_database_between_tests
+ * or use `clearFirestoreData({ projectId: string }) => Promise`
+ * ref: https://firebase.google.com/docs/rules/unit-tests#test_sdk_methods
  * @param {String} databaseID the id of the firestore emulator
  */
 async function clearFirestoreDatabase(databaseID) {
@@ -112,10 +123,10 @@ async function clearFirestoreDatabase(databaseID) {
 }
 
 exports.mockFirebaseAdmin = mockFirebaseAdmin;
-exports.addFakeDatatoFirestore = addFakeDatatoFirestore;
+exports.addFakeDataToFirestore = addFakeDataToFirestore;
 exports.fakeTagData = fakeTagData;
-exports.fakeDetailFromTagData = fakeDetailFromTagData;
 exports.fakeDataId = fakeDataId;
 exports.fakeCategory = fakeCategory;
 exports.fakeStatusData = fakeStatusData;
+exports.fakeUserInfo = fakeUserInfo;
 exports.clearFirestoreDatabase = clearFirestoreDatabase;

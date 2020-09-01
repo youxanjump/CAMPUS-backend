@@ -6,9 +6,8 @@ const FirebaseAPI = require('../firebase');
 const {
   mockFirebaseAdmin,
   fakeTagData,
-  fakeDetailFromTagData,
   fakeStatusData,
-  addFakeDatatoFirestore,
+  addFakeDataToFirestore,
   clearFirestoreDatabase,
 } = require('./testUtils');
 
@@ -18,11 +17,9 @@ const testProjectId = 'smartcampus-test';
 
 describe('test data add operation', () => {
   let firebaseAPIinstance;
-  let firestore;
   beforeAll(() => {
     const admin = mockFirebaseAdmin(testProjectId);
     firebaseAPIinstance = new FirebaseAPI({ admin });
-    firestore = admin.firestore();
   });
   afterAll(async () => {
     await Promise.all(firebase.apps().map(app => app.delete()));
@@ -32,8 +29,12 @@ describe('test data add operation', () => {
   });
   test('test `addTagDataToFirestore`', async () => {
     const data = { ...fakeTagData };
+    const uid = 'test-uid';
 
-    const docData = await firebaseAPIinstance.addTagDataToFirestore({ data });
+    const docData = await firebaseAPIinstance.addTagDataToFirestore({
+      data,
+      uid,
+    });
 
     // console.log(data);
     expect(docData).toMatchObject({
@@ -42,6 +43,7 @@ describe('test data add operation', () => {
       accessibility: data.accessibility,
       coordinates: data.coordinates,
       category: data.category,
+      uid,
       status: {
         statusName: fakeStatusData.statusName,
         createTime: expect.any(firebase.firestore.Timestamp),
@@ -52,26 +54,6 @@ describe('test data add operation', () => {
           createTime: expect.any(firebase.firestore.Timestamp),
         },
       ],
-    });
-  });
-  test('test `setTagDetailToFirestore` with description', async () => {
-    const tagID = 'test-tag-id';
-    const data = { ...fakeDetailFromTagData };
-
-    await firebaseAPIinstance.setTagDetailToFirestore({
-      tagID,
-      data,
-    });
-
-    // get data from firestore
-    const detailDataSnap = await firestore
-      .collection('tagDetail')
-      .doc(tagID)
-      .get();
-
-    const detailData = detailDataSnap.data();
-
-    expect(detailData).toMatchObject({
       createTime: expect.any(firebase.firestore.Timestamp),
       lastUpdateTime: expect.any(firebase.firestore.Timestamp),
       createUserID: expect.any(String),
@@ -79,34 +61,27 @@ describe('test data add operation', () => {
       streetViewInfo: data.streetViewInfo,
     });
   });
-  test('test `setTagDetailToFirestore` with no description', async () => {
-    const tagID = 'test-tag-id-no-description';
-    const data = { ...fakeDetailFromTagData };
-    delete data.description;
+  test('test `setTagDetailToFirestore` with some empty fields', async () => {
+    const data = { ...fakeTagData };
+    const uid = 'test-uid';
 
-    await firebaseAPIinstance.setTagDetailToFirestore({
-      tagID,
+    // delete some fileds
+    delete data.description;
+    delete data.streetViewInfo;
+
+    const docData = await firebaseAPIinstance.addTagDataToFirestore({
       data,
+      uid,
     });
 
-    // get data from firestore
-    const detailDataSnap = await firestore
-      .collection('tagDetail')
-      .doc(tagID)
-      .get();
-
-    const detailData = detailDataSnap.data();
-
     // console.log(data);
-    expect(detailData).toMatchObject({
-      createTime: expect.any(firebase.firestore.Timestamp),
-      lastUpdateTime: expect.any(firebase.firestore.Timestamp),
+    expect(docData).toMatchObject({
       description: '',
-      streetViewInfo: data.streetViewInfo,
+      streetViewInfo: null,
     });
   });
   test('test `addNewTagData`', async () => {
-    const responseData = await addFakeDatatoFirestore(firebaseAPIinstance);
+    const responseData = await addFakeDataToFirestore(firebaseAPIinstance);
 
     expect(responseData.tag).toMatchObject({
       id: expect.any(String),
@@ -130,18 +105,6 @@ describe('test data add operation', () => {
       responseData.imageNumber
     );
     expect(responseData.imageUploadUrl).toContain('http://signed.url');
-
-    // check detail collection data
-    const detailDocData = (
-      await firestore.collection('tagDetail').doc(responseData.tag.id).get()
-    ).data();
-    // console.log(detailDoc);
-    expect(detailDocData).toMatchObject({
-      createTime: expect.any(firebase.firestore.Timestamp),
-      lastUpdateTime: expect.any(firebase.firestore.Timestamp),
-      description: fakeDetailFromTagData.description,
-      streetViewInfo: fakeDetailFromTagData.streetViewInfo,
-    });
   });
 }); // end describe
 
@@ -158,7 +121,7 @@ describe('test data read operation', () => {
     await clearFirestoreDatabase(testProjectId);
 
     // add data
-    await addFakeDatatoFirestore(firebaseAPIinstance);
+    await addFakeDataToFirestore(firebaseAPIinstance);
   });
 
   test('test `getTagList`', async () => {
