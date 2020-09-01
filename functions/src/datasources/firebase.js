@@ -246,16 +246,6 @@ class FirebaseAPI extends DataSource {
   }
 
   /**
-   * Add tag detail data to collection `tagDetailData` in firestore
-   * @param {object} param
-   * @param {String} param.tagID the id of the tag
-   * @param {object} param.detailFromTagData contain the necessary filed should
-   *  be added to tagDetail document
-   * @return {undefined}
-   */
-  // async setTagDetailToFirestore({ tagID, data }) {}
-
-  /**
    * Add tag data to collection `tagData` in firestore
    * @param {object} param
    * @param {object} param.tagData contain the necessary filed should
