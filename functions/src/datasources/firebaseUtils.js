@@ -66,24 +66,6 @@ async function getLatestStatus(docRef) {
 }
 
 /**
- * TODO: add paginate function
- * Get status history of current tag document `status` collection
- * @param {DocumentReference} docRef The document we want to get the latest
- *   status
- */
-async function getStatusHistory(docRef) {
-  const statusDocSnap = await docRef
-    .collection('status')
-    .orderBy('createTime', 'desc')
-    .get();
-  const statusRes = [];
-  statusDocSnap.forEach(doc => {
-    statusRes.push(doc.data());
-  });
-  return statusRes;
-}
-
-/**
  * Extract data from tag document reference
  * @param {DocumentReference} docRef The document we want to get the data
  */
@@ -91,7 +73,8 @@ async function getDataFromTagDocRef(docRef) {
   const data = {
     id: docRef.id,
     status: await getLatestStatus(docRef),
-    statusHistory: await getStatusHistory(docRef),
+    // move to resolver
+    // statusHistory: await getStatusHistory(docRef),
     ...(await docRef.get()).data(),
   };
   return data;
@@ -100,5 +83,4 @@ async function getDataFromTagDocRef(docRef) {
 exports.getImageUploadUrls = getImageUploadUrls;
 exports.getDefaultStatus = getDefaultStatus;
 exports.getLatestStatus = getLatestStatus;
-exports.getStatusHistory = getStatusHistory;
 exports.getDataFromTagDocRef = getDataFromTagDocRef;

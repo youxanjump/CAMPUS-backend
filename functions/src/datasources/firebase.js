@@ -188,6 +188,25 @@ class FirebaseAPI extends DataSource {
   }
 
   /**
+   * TODO: add paginate function
+   * Get status history of current tag document `status` collection
+   * @param {DocumentReference} docRef The document we want to get the latest
+   *   status
+   */
+  async getStatusHistory({ tagID }) {
+    const docRef = await this.firestore.collection('tagData').doc(tagID);
+    const statusDocSnap = await docRef
+      .collection('status')
+      .orderBy('createTime', 'desc')
+      .get();
+    const statusRes = [];
+    statusDocSnap.forEach(doc => {
+      statusRes.push(doc.data());
+    });
+    return statusRes;
+  }
+
+  /**
    * get mission detail with specific id
    * @async
    * @param {object} param
@@ -329,7 +348,7 @@ class FirebaseAPI extends DataSource {
     const { logIn, uid } = userInfo;
     if (!logIn) {
       // TODO: anonymous user data or throw authorize error
-      throw new ForbiddenError('User is not login');
+      // throw new ForbiddenError('User is not login');
     }
     // add tagData to firestore
     const tagDataDocumentData = await this.addTagDataToFirestore({ data, uid });

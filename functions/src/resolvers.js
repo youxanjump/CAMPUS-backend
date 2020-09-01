@@ -25,7 +25,9 @@ module.exports = {
       tag.lastUpdateTime.toDate().toString(),
     createUser: async (tag, _, __) => ({ uid: tag.createUserID }),
     imageUrl: async (tag, _, { dataSources }) =>
-      dataSources.firebaseAPI.getImageUrls({ tagID: tag.tagID }),
+      dataSources.firebaseAPI.getImageUrls({ tagID: tag.id }),
+    statusHistory: async (tag, _, { dataSources }) =>
+      dataSources.firebaseAPI.getStatusHistory({ tagID: tag.id }),
   },
   Status: {
     createTime: async (status, _, __) => status.createTime.toDate().toString(),
