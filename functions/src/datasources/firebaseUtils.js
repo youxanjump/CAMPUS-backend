@@ -97,8 +97,26 @@ async function getDataFromTagDocRef(docRef) {
   return data;
 }
 
+/**
+ * Get User's intent and its answer
+ */
+async function getIntentFromDocRef(docRef) {
+  let data;
+  await docRef.get().then(function (doc) {
+    if (doc.exists) {
+      data = {
+        userIntent: doc.data().userIntent,
+        userAnswer: doc.data().userAnswer,
+      };
+      // console.log(data);
+    }
+  });
+  return data;
+}
+
 exports.getImageUploadUrls = getImageUploadUrls;
 exports.getDefaultStatus = getDefaultStatus;
 exports.getLatestStatus = getLatestStatus;
 exports.getStatusHistory = getStatusHistory;
 exports.getDataFromTagDocRef = getDataFromTagDocRef;
+exports.getIntentFromDocRef = getIntentFromDocRef;

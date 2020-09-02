@@ -41,6 +41,11 @@ const fakeStatusData = {
   createTime: firebase.firestore.FieldValue.serverTimestamp(),
 };
 
+const fakeIntent = {
+  userIntent: '肚子餓',
+  userAnswer: '吃東西',
+};
+
 /**
  * Mock firebase admin instance
  * @param {String} projectId The projectId to initiate firebase admin
@@ -108,4 +113,5 @@ exports.fakeDetailFromTagData = fakeDetailFromTagData;
 exports.fakeDataId = fakeDataId;
 exports.fakeCategory = fakeCategory;
 exports.fakeStatusData = fakeStatusData;
+exports.fakeIntent = fakeIntent;
 exports.clearFirestoreDatabase = clearFirestoreDatabase;
