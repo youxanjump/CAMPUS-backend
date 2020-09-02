@@ -348,7 +348,7 @@ class FirebaseAPI extends DataSource {
     const { logIn, uid } = userInfo;
     if (!logIn) {
       // TODO: anonymous user data or throw authorize error
-      // throw new ForbiddenError('User is not login');
+      throw new ForbiddenError('User is not login');
     }
     // add tagData to firestore
     const tagDataDocumentData = await this.addTagDataToFirestore({ data, uid });
