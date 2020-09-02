@@ -8,6 +8,7 @@ const {
   getImageUploadUrls,
   getDefaultStatus,
   getDataFromTagDocRef,
+  getIntentFromDocRef,
 } = require('./firebaseUtils');
 
 /** Handle action with firebase
@@ -343,12 +344,23 @@ class FirebaseAPI extends DataSource {
    * @param {String} param.userIntent
    * @param {String} param.userAnswer
    */
-  async addNewIntent({ userIntent, userAnswer }) {
-    await this.firestore.collection('intent').add({
-      userIntent,
-      userAnswer,
-    });
-    return 'finish add new intent';
+  async addNewIntent({ data }) {
+    const { userIntent, userAnswer } = data;
+    const intentRef = await this.firestore.collection('intent');
+    let retData;
+    await intentRef
+      .add({
+        userIntent,
+        userAnswer,
+      })
+      .then(function (docRef) {
+        retData = getIntentFromDocRef(intentRef.doc(docRef.id));
+        console.log(`finish add new intent`);
+      })
+      .catch(function (error) {
+        console.error('error add document: ', error);
+      });
+    return retData;
   }
 } // class FirebaseAPI
 

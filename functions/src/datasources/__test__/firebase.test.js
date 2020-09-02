@@ -8,6 +8,7 @@ const {
   fakeTagData,
   fakeDetailFromTagData,
   fakeStatusData,
+  fakeIntent,
   addFakeDatatoFirestore,
   clearFirestoreDatabase,
 } = require('./testUtils');
@@ -52,6 +53,15 @@ describe('test data add operation', () => {
           createTime: expect.any(firebase.firestore.Timestamp),
         },
       ],
+    });
+  });
+  test('test `addNewIntent`', async () => {
+    const data = { ...fakeIntent };
+
+    const docData = await firebaseAPIinstance.addNewIntent({ data });
+    expect(docData).toMatchObject({
+      userIntent: data.userIntent,
+      userAnswer: data.userAnswer,
     });
   });
   test('test `setTagDetailToFirestore` with description', async () => {
