@@ -1,17 +1,13 @@
 const tagResolvers = {
   Tag: {
-    tagDetail: async (tag, _, { dataSources }) =>
-      dataSources.firebaseAPI.getTagDetail({ tagID: tag.id }),
-  },
-};
-
-const tagdetailResolvers = {
-  TagDetail: {
-    createTime: async (tagDetail, _, __) =>
-      tagDetail.createTime.toDate().toString(),
-    lastUpdateTime: async (tagDetail, _, __) =>
-      tagDetail.lastUpdateTime.toDate().toString(),
-    createUser: async (tagDetail, _, __) => tagDetail.createUserID,
+    createTime: async (tag, _, __) => tag.createTime.toDate().toString(),
+    lastUpdateTime: async (tag, _, __) =>
+      tag.lastUpdateTime.toDate().toString(),
+    createUser: async (tag, _, __) => ({ uid: tag.createUserID }),
+    imageUrl: async (tag, _, { dataSources }) =>
+      dataSources.firebaseAPI.getImageUrls({ tagID: tag.id }),
+    statusHistory: async (tag, _, { dataSources }) =>
+      dataSources.firebaseAPI.getStatusHistory({ tagID: tag.id }),
   },
 };
 
@@ -54,7 +50,6 @@ const coordinateResolvers = {
 
 module.exports = {
   tagResolvers,
-  tagdetailResolvers,
   statusResolvers,
   userResolvers,
   missionResolver,
