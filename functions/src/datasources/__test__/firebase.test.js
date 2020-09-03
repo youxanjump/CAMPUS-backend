@@ -9,6 +9,7 @@ const {
   fakeStatusData,
   fakeUserInfo,
   addFakeDataToFirestore,
+  fakeIntent,
   clearFirestoreDatabase,
 } = require('./testUtils');
 
@@ -48,11 +49,26 @@ describe('test data add operation', () => {
         statusName: fakeStatusData.statusName,
         createTime: expect.any(firebase.firestore.Timestamp),
       },
+      statusHistory: [
+        {
+          statusName: fakeStatusData.statusName,
+          createTime: expect.any(firebase.firestore.Timestamp),
+        },
+      ],
       createTime: expect.any(firebase.firestore.Timestamp),
       lastUpdateTime: expect.any(firebase.firestore.Timestamp),
       createUserID: uid,
       description: data.description,
       streetViewInfo: data.streetViewInfo,
+    });
+  });
+  test('test `addNewIntent`', async () => {
+    const data = { ...fakeIntent };
+
+    const docData = await firebaseAPIinstance.addNewIntent({ data });
+    expect(docData).toMatchObject({
+      userIntent: data.userIntent,
+      userAnswer: data.userAnswer,
     });
   });
   test('test `setTagDetailToFirestore` with some empty fields', async () => {

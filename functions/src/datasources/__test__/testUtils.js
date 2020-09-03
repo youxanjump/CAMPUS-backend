@@ -46,6 +46,10 @@ const fakeUserInfo = {
   email: 'test-uid@test.com',
   displayName: 'test-display-name',
 };
+const fakeIntent = {
+  userIntent: '肚子餓',
+  userAnswer: '吃東西',
+};
 
 /**
  * Mock firebase admin instance
@@ -129,4 +133,5 @@ exports.fakeDataId = fakeDataId;
 exports.fakeCategory = fakeCategory;
 exports.fakeStatusData = fakeStatusData;
 exports.fakeUserInfo = fakeUserInfo;
+exports.fakeIntent = fakeIntent;
 exports.clearFirestoreDatabase = clearFirestoreDatabase;

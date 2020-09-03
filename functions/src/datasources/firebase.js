@@ -9,6 +9,7 @@ const {
   getImageUploadUrls,
   getDefaultStatus,
   getDataFromTagDocRef,
+  getIntentFromDocRef,
 } = require('./firebaseUtils');
 
 /** Handle action with firebase
@@ -285,6 +286,19 @@ class FirebaseAPI extends DataSource {
   }
 
   /**
+   * get the answer of the user's question
+   * @param {String} param.userIntent the intent that user's question meaning
+   */
+  async getAnswer({ userIntent }) {
+    const queryIntent = await this.firestore
+      .collection('intent')
+      .where('userIntent', '==', userIntent)
+      .get();
+    // console.log(target_intent);
+    return queryIntent.u_answer;
+  }
+
+  /**
    * Add tag data to collection `tagData` in firestore
    * @param {object} param
    * @param {object} param.tagData contain the necessary filed should
@@ -386,6 +400,30 @@ class FirebaseAPI extends DataSource {
       .add(statusData);
 
     return (await docRef.get()).data();
+  }
+
+  /**
+   * Add user's FAQ or some other question and answer
+   * @param {String} param.userIntent
+   * @param {String} param.userAnswer
+   */
+  async addNewIntent({ data }) {
+    const { userIntent, userAnswer } = data;
+    const intentRef = await this.firestore.collection('intent');
+    let retData;
+    await intentRef
+      .add({
+        userIntent,
+        userAnswer,
+      })
+      .then(function (docRef) {
+        retData = getIntentFromDocRef(intentRef.doc(docRef.id));
+        console.log(`finish add new intent`);
+      })
+      .catch(function (error) {
+        console.error('error add document: ', error);
+      });
+    return retData;
   }
 } // class FirebaseAPI
 
