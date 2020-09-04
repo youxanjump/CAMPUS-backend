@@ -31,8 +31,8 @@ const Status = `type Status {
 }`;
 
 const User = `type User {
-  id: ID!
-  name: String
+  uid: ID!
+  displayName: String
   "only available to user itself?need authorization mechanism"
   email: String
 }`;
@@ -110,7 +110,7 @@ const StreetViewInput = `input StreetViewInput {
   povPitch: Float!
   panoID: String!
   cameraLatitude: Float!
-  cameralongitude: Float!
+  cameraLongitude: Float!
 }`;
 
 module.exports = {

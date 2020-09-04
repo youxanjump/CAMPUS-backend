@@ -13,8 +13,8 @@ const fakeStreetViewData = {
   povHeading: 52.16330308370064,
   povPitch: -14.148336578552815,
   panoID: '0pq7qRZQvlQ8rzUrnZLk2g',
-  latitude: 24.7872616,
-  longitude: 120.9969249,
+  cameraLatitude: 24.7872616,
+  cameraLongitude: 120.9969249,
 };
 
 // the fake data will input from front end
