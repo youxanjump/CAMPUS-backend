@@ -215,15 +215,18 @@ class FirebaseAPI extends DataSource {
 
   /**
    * get the answer of the user's question
-   * @param {String} param.userIntent the intent that user's question meaning
+   * @param {String} param.userintent the intent that user's question meaning
    */
-  async getAnswer({ userIntent }) {
-    const queryIntent = await this.firestore
-      .collection('intent')
-      .where('userIntent', '==', userIntent)
+  async getAnswer(userintent) {
+    const intentRef = await this.firestore.collection('intent');
+    let queryIntent;
+    const querySnapshot = await intentRef
+      .where('userintent', '==', userintent)
       .get();
-    // console.log(target_intent);
-    return queryIntent.u_answer;
+    querySnapshot.forEach(doc => {
+      queryIntent = doc.data();
+    });
+    return queryIntent.useranswer;
   }
 
   /**
@@ -341,17 +344,17 @@ class FirebaseAPI extends DataSource {
 
   /**
    * Add user's FAQ or some other question and answer
-   * @param {String} param.userIntent
-   * @param {String} param.userAnswer
+   * @param {String} param.userintent
+   * @param {String} param.useranswer
    */
   async addNewIntent({ data }) {
-    const { userIntent, userAnswer } = data;
+    const { userintent, useranswer } = data;
     const intentRef = await this.firestore.collection('intent');
     let retData;
     await intentRef
       .add({
-        userIntent,
-        userAnswer,
+        userintent,
+        useranswer,
       })
       .then(function (docRef) {
         retData = getIntentFromDocRef(intentRef.doc(docRef.id));

@@ -42,8 +42,8 @@ const fakeStatusData = {
 };
 
 const fakeIntent = {
-  userIntent: '肚子餓',
-  userAnswer: '吃東西',
+  userintent: '肚子餓',
+  useranswer: '吃東西',
 };
 
 /**
