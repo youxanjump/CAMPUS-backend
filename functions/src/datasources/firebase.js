@@ -161,7 +161,7 @@ class FirebaseAPI extends DataSource {
     const list = [];
     const querySnapshot = await this.firestore
       .collection('tagData')
-      .where('createUserID', '==', uid)
+      .where('createUserId', '==', uid)
       .orderBy('createTime', 'desc')
       .get();
     querySnapshot.forEach(doc => {
@@ -324,14 +324,18 @@ class FirebaseAPI extends DataSource {
       // originally tagDetail
       createTime: this.admin.firestore.FieldValue.serverTimestamp(),
       lastUpdateTime: this.admin.firestore.FieldValue.serverTimestamp(),
-      createUserID: uid,
+      createUserId: uid,
       description: description || '',
       streetViewInfo: streetViewInfo || null,
     };
     const defaultStatus = {
       statusName: getDefaultStatus(category.missionName),
       createTime: this.admin.firestore.FieldValue.serverTimestamp(),
+      createUserId: uid,
     };
+    if (category.missionName === '問題任務') {
+      defaultStatus.numberOfUpVote = 0;
+    }
 
     const tagGeoRef = this.geofirestore.collection('tagData');
 

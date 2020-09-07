@@ -51,7 +51,7 @@ describe('test data add operation', () => {
       },
       createTime: expect.any(firebase.firestore.Timestamp),
       lastUpdateTime: expect.any(firebase.firestore.Timestamp),
-      createUserID: uid,
+      createUserId: uid,
       description: data.description,
       streetViewInfo: data.streetViewInfo,
     });
