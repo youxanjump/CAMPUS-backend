@@ -382,7 +382,7 @@ class FirebaseAPI extends DataSource {
   } // function async updateTagData
 
   /**
-   * Update new status to new the new platform
+   * Insert latest status to the history
    * @param {object} param
    * @param {String} param.tagId the id of the tag document we want to update
    *  status
