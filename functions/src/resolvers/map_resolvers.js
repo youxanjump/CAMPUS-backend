@@ -14,6 +14,7 @@ const tagResolvers = {
 const statusResolvers = {
   Status: {
     createTime: async (status, _, __) => status.createTime.toDate().toString(),
+    createUser: async (status, _, __) => ({ uid: status.createUserId }),
   },
 };
 

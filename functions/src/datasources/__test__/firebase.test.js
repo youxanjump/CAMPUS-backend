@@ -48,6 +48,7 @@ describe('test data add operation', () => {
       status: {
         statusName: fakeStatusData.statusName,
         createTime: expect.any(firebase.firestore.Timestamp),
+        createUserId: uid,
       },
       createTime: expect.any(firebase.firestore.Timestamp),
       lastUpdateTime: expect.any(firebase.firestore.Timestamp),
