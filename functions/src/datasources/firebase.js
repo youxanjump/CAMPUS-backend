@@ -1,6 +1,5 @@
 /** @module Firebase */
 const { DataSource } = require('apollo-datasource');
-const { ForbiddenError } = require('apollo-server');
 const { AuthenticationError } = require('apollo-server-express');
 // geofirestore
 const { GeoFirestore } = require('geofirestore');
@@ -10,6 +9,7 @@ const {
   getDefaultStatus,
   getDataFromTagDocRef,
   getIntentFromDocRef,
+  checkUserLogIn,
 } = require('./firebaseUtils');
 
 /** Handle action with firebase
@@ -364,10 +364,7 @@ class FirebaseAPI extends DataSource {
   async addNewTagData({ data, userInfo }) {
     // check user status
     const { logIn, uid } = userInfo;
-    if (!logIn) {
-      // TODO: anonymous user data or throw authorize error
-      throw new ForbiddenError('User is not login');
-    }
+    checkUserLogIn(logIn);
     // add tagData to firestore
     const tagDataDocumentData = await this.addTagDataToFirestore({ data, uid });
 

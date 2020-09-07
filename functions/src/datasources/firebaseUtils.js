@@ -1,4 +1,5 @@
 const { v4: uuidv4 } = require('uuid');
+const { ForbiddenError } = require('apollo-server');
 
 function generateFileName(imageNumber, tagID) {
   return [...new Array(imageNumber)].map(
@@ -97,8 +98,20 @@ async function getIntentFromDocRef(docRef) {
   return data;
 }
 
+/**
+ * Check if user is log in. If not, raise ForbiddenError
+ * @param {Boolean} logIn logIn status
+ */
+function checkUserLogIn(logIn) {
+  if (!logIn) {
+    // TODO: anonymous user data or throw authorize error
+    throw new ForbiddenError('User is not login');
+  }
+}
+
 exports.getImageUploadUrls = getImageUploadUrls;
 exports.getDefaultStatus = getDefaultStatus;
 exports.getLatestStatus = getLatestStatus;
 exports.getDataFromTagDocRef = getDataFromTagDocRef;
 exports.getIntentFromDocRef = getIntentFromDocRef;
+exports.checkUserLogIn = checkUserLogIn;
