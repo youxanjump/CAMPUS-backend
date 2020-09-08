@@ -51,8 +51,9 @@ function getDefaultStatus(missionName) {
  * Get latest status of current tag document `status` collection
  * @param {DocumentReference} docRef The document we want to get the latest
  *   status
+ * @param {data} Boolean if true, return data, else return DocumentReference
  */
-async function getLatestStatus(docRef) {
+async function getLatestStatus(docRef, data = true) {
   const statusDocSnap = await docRef
     .collection('status')
     .orderBy('createTime', 'desc')
@@ -60,7 +61,11 @@ async function getLatestStatus(docRef) {
     .get();
   const statusRes = [];
   statusDocSnap.forEach(doc => {
-    statusRes.push(doc.data());
+    if (data) {
+      statusRes.push(doc.data());
+    } else {
+      statusRes.push(doc.ref);
+    }
   });
   const [currentStatus] = statusRes;
   return currentStatus;

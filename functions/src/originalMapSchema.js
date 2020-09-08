@@ -25,6 +25,8 @@ const typeDefs = gql`
     streetViewInfo: StreetView
     status: Status
     statusHistory: [Status]!
+    numberOfUpVote: Integer
+    hasUpVote: Boolean
   }
 
   type Category {

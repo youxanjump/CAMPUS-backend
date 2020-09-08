@@ -8,9 +8,12 @@ const {
   getImageUploadUrls,
   getDefaultStatus,
   getDataFromTagDocRef,
+  getLatestStatus,
   getIntentFromDocRef,
   checkUserLogIn,
 } = require('./firebaseUtils');
+
+const { upVoteActionName, cancelUpVoteActionName } = require('./constants');
 
 /** Handle action with firebase
  *  @todo Rewrite this class name
@@ -405,6 +408,45 @@ class FirebaseAPI extends DataSource {
       .add(statusData);
 
     return (await docRef.get()).data();
+  }
+
+  /**
+   * Update user's upvote status to specific tag. Update the numberOfUpVote and
+   * record the user has upvoted.
+   * @param {object} param
+   * @param {String} param.tagId the id of the tag document we want to update
+   *  status
+   * @param {String} param.action upvote or cancel upvote
+   * @return {object} the latest status data
+   */
+  async updateUpVoteStatus({ tagId, action, userInfo }) {
+    const { logIn, uid } = userInfo;
+    checkUserLogIn(logIn);
+    const tagDocRef = this.firestore.collection('tagData').doc(tagId);
+
+    const tagStatusDocRef = await getLatestStatus(tagDocRef, false);
+    const tagStatusUpVoteUserRef = tagStatusDocRef
+      .collection('UpVoteUser')
+      .doc(uid);
+
+    await this.firestore.runTransaction(async t => {
+      const tagStatusDocSnap = await t.get(tagStatusDocRef);
+      const tagStatusUpVoteUserSnap = await t.get(tagStatusUpVoteUserRef);
+      if (action === upVoteActionName && !tagStatusUpVoteUserSnap.exists) {
+        tagStatusDocSnap.update({
+          numberOfUpVote: this.firestore.FieldValue.increment(1),
+        });
+        tagStatusUpVoteUserSnap.set({ hasUpVote: true });
+      } else if (
+        action === cancelUpVoteActionName &&
+        tagStatusUpVoteUserSnap.exists
+      ) {
+        tagStatusDocSnap.update({
+          numberOfUpVote: this.firestore.FieldValue.increment(-1),
+        });
+        tagStatusUpVoteUserSnap.delete();
+      }
+    });
   }
 
   /**
