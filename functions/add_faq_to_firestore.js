@@ -1,3 +1,4 @@
+// eslint-disable-line global-require
 const GoogleSpreadsheet = require('google-spreadsheet');
 const { promisify } = require('util');
 const admin = require('firebase-admin');
