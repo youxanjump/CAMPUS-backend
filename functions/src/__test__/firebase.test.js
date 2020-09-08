@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 const firebase = require('@firebase/testing');
-const FirebaseAPI = require('../firebase');
+const FirebaseAPI = require('../datasources/firebase');
 const {
   mockFirebaseAdmin,
   fakeTagData,
