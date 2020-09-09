@@ -23,7 +23,7 @@ const callCreateApp = async options => {
 // Call Apps_Create
 const createApp = async config => {
   try {
-    console.log('enter creatApp try');
+    console.log('\nenter creatApp try');
     // JSON for the request body
     // { "name": MyAppName, "culture": "en-us"}
     const jsonBody = {
@@ -36,7 +36,7 @@ const createApp = async config => {
       uri: config.uri,
       method: 'POST',
       headers: {
-        'Ocp-Apim-Subscription-Key': config.LUIS_subscriptionKey,
+        'Ocp-Apim-Subscription-Key': config.LUISSubscriptionKey,
       },
       json: true,
       body: jsonBody,

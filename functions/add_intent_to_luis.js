@@ -1,6 +1,6 @@
 const parse = require('./src/azuretools/_parse');
 // const createApp = require('./src/azuretools/_create');
-// const addIntents = require('./src/azuretools/_intents');
+const addIntents = require('./src/azuretools/_intents');
 const upload = require('./src/azuretools/_upload');
 
 // Change these values
@@ -11,9 +11,11 @@ const LUISendpoint = 'https://westus.api.cognitive.microsoft.com/';
 const LUISversionId = '0.1';
 
 // The app ID is returned from LUIS when your app is created
-let LUISappId = 'default_id'; // default app ID
+let LUISappId = 'default_id';
 let intents = [];
 let questions = [];
+
+const googleSheetLocation = '1mLBmZctIw_MA6V_zD3yIjkYoKZDGS0seKnSkKjIdvxI';
 
 /* add utterances parameters */
 const configAddUtterances = {
@@ -22,7 +24,7 @@ const configAddUtterances = {
   LUISversionId,
   questions,
   intents,
-  uri: `${LUISendpoint}luis/api/v2.0/apps/${LUISappId}/versions/${LUISversionId}/examples`,
+  uri: `${LUISendpoint}luis/authoring/v3.0-preview/apps/${LUISappId}/versions/${LUISversionId}/examples`,
 };
 
 /* create app parameters */
@@ -31,7 +33,7 @@ const configAddUtterances = {
   LUISversionId,
   appName: LUISappName,
   culture: LUISappCulture,
-  uri: `${LUISendpoint}luis/api/v2.0/apps/`,
+  uri: `${LUISendpoint}luis/authoring/v3.0-preview/apps/`,
 };
 
 /* add intents parameters */
@@ -40,26 +42,26 @@ const configAddIntents = {
   LUISappId,
   LUISversionId,
   intentList: intents,
-  uri: `${LUISendpoint}luis/api/v2.0/apps/${LUISappId}/versions/${LUISversionId}/intents`,
+  uri: `${LUISendpoint}luis/authoring/v3.0-preview/apps/${LUISappId}/versions/${LUISversionId}/intents`,
 };
 
 // Parse CSV, parameter is the address of the google sheet
-parse('1mLBmZctIw_MA6V_zD3yIjkYoKZDGS0seKnSkKjIdvxI')
+parse(googleSheetLocation)
   .then(model => {
-    // Save intent and entity names from parse
+    // Save intent and questions names from parse
     intents = model.intents;
     questions = model.questions;
-    // console.log({...intents});
+
     // Create the LUIS app
-    console.log(intents.length);
     // return createApp(configCreateApp);
   })
-  .then(appId => {
+  .then(() => {
+    LUISappId = '94640df8-9327-4bd7-9484-aa58119f6ab0';
+
     // Add intents
-    LUISappId = '9edbd98e-e481-44d2-abc9-3cdba937c5b4';
-    configAddIntents.LUISappId = appId;
+    configAddIntents.LUISappId = LUISappId;
     configAddIntents.intentList = intents;
-    // return addIntents(configAddIntents);
+    return addIntents(configAddIntents);
   })
   .then(() => {
     // Add example utterances to the intents in the app

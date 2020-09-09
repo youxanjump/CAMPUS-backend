@@ -3,27 +3,25 @@ const merge = require('deepmerge');
 const { promisify } = require('util');
 const creds = require('../../../../../key_rootdir/smartcampus-1b31f-firebase-adminsdk-qamsd-a188096453.json');
 
-function listOfIntents(rows) {
+function listOfIntentsAndQuestions(cells) {
+  const questions = {};
   const intents = [];
-  rows.forEach( page => {
-    page.forEach( faq => {
-      const data = { ...faq };
-      intents.push(data.intent);
-    });
-  });
-  return intents;
-}
-
-function listOfQuestions(cells) {
-  const trainRequestions = {};
-  let intent;
   for (const cell of cells) {
     if (cell.col === 1) {
-      intent = cell.value;
-      trainRequestions[intent] = [];
-    } else trainRequestions[intent].push(cell.value);
+      intents.push(cell.value);
+      questions[cell.value] = [];
+    } else {
+      questions[intents[intents.length - 1]].push(cell.value);
+      /* console.log(
+        `Parsing qustion '${
+          questions[intents[intents.length - 1]][
+            questions[intents[intents.length - 1]].length - 1
+          ]
+        }' to the intent '${intents[intents.length - 1]}'`
+      ); */
+    }
   }
-  return trainRequestions;
+  return { intents, questions };
 }
 
 const convert = async googleSheet => {
@@ -32,25 +30,9 @@ const convert = async googleSheet => {
   const info = await promisify(doc.getInfo)();
   const sheetLength = info.worksheets.length;
   const sheet = info.worksheets;
-  const rows = [];
 
-  for (let i = 0; i < sheetLength; i += 1) {
-    rows.push(
-      await promisify(sheet[i].getRows)({
-        offset: 1,
-      })
-    );
-  }
-  //Promise.all(rows);
-
-  console.log('parse done');
-  console.log(
-    'JSON file should contain utterances. Next step is to create an app with the intents and entities it found.'
-  );
-
-  // intents is all the faq intent
-  const intents = listOfIntents(rows);
-  // questions is an object with format : 'intent': [all the train questions...]
+  console.log('Start parsing Google Sheet...');
+  const intents = [];
   let questions = {};
 
   for (let i = 0; i < sheetLength; i += 1) {
@@ -59,13 +41,16 @@ const convert = async googleSheet => {
       'min-col': 1,
       'return-empty': false,
     });
-    questions = merge(questions, listOfQuestions(cells));
+    const listedIntentsAndQuestions = listOfIntentsAndQuestions(cells);
+    questions = merge(questions, listedIntentsAndQuestions.questions);
+    intents.push.apply(intents, listedIntentsAndQuestions.intents);
   }
 
   const model = {
     intents,
     questions,
   };
+  console.log('parse done.');
   return model;
 };
 

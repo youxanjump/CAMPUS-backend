@@ -1,9 +1,9 @@
 const request = require('requestretry');
 // time delay between requests
-const delayMS = 3000;
+const delayMS = 5000;
 
 // retry recount
-const maxRetry = 100;
+const maxRetry = 50;
 
 // retry request if error or 429 received
 const retryStrategy = function (err, response) {
@@ -35,9 +35,9 @@ const callAddIntent = async options => {
     const response = await request(options);
     if (response.statusCode < 400) {
       await suc();
-      console.log(
+      /* console.log(
         `intent ${intent} succeed with status code  ${response.statusCode}`
-      );
+      ); */
       // console.log(`The number of request attempts: ${response.attempts}\n`);
     } else if (response.statusCode >= 400) {
       await fai();
@@ -55,10 +55,7 @@ const callAddIntent = async options => {
 // Call add-intents
 const addIntents = async config => {
   const intentPromises = [];
-  const myuri = config.uri
-    .replace('default_id', config.LUIS_appId)
-    .replace('0.1', config.LUIS_versionId);
-
+  console.log('\nStart adding intents...');
   config.intentList.forEach(function (intent) {
     try {
       // JSON for the request body
@@ -66,13 +63,15 @@ const addIntents = async config => {
         name: intent,
       };
 
+      const url = config.uri.replace('default_id', config.LUISappId);
+
       // Create an intent
       const addIntentPromise = callAddIntent({
         // uri: config.uri,
-        url: myuri,
+        url,
         method: 'POST',
         headers: {
-          'Ocp-Apim-Subscription-Key': config.LUIS_subscriptionKey,
+          'Ocp-Apim-Subscription-Key': config.LUISSubscriptionKey,
         },
         json: true,
         body: jsonBody,
@@ -87,7 +86,9 @@ const addIntents = async config => {
   }, this);
 
   await Promise.all(intentPromises);
+  console.log('Add intents done.');
   console.log(`Success = ${succeed}\nFail = ${fail}\n`);
+  // console.log(response);
   // let response = results;
 };
 
