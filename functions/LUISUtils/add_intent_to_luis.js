@@ -1,13 +1,13 @@
 const parse = require('../src/azuretools/_parse');
-// const createApp = require('./src/azuretools/_create');
+const createApp = require('../src/azuretools/_create');
 const addIntents = require('../src/azuretools/_intents');
 const upload = require('../src/azuretools/_upload');
 
 // Change these values
 const LUISauthoringKey = '6da613deaa9042beae670f765936fda3';
-// const LUISappName = 'Luis-FAQ-test';
+const LUISappName = 'Luis-FAQ-test';
 const LUISendpoint = 'https://westus.api.cognitive.microsoft.com/';
-// const LUISappCulture = 'en-us';
+const LUISappCulture = 'en-us';
 const LUISversionId = '0.1';
 
 // The app ID is returned from LUIS when your app is created
@@ -28,7 +28,7 @@ const configAddUtterances = {
 };
 
 /* create app parameters */
-/* const configCreateApp = {
+const configCreateApp = {
   LUISSubscriptionKey: LUISauthoringKey,
   LUISversionId,
   appName: LUISappName,
@@ -53,11 +53,10 @@ parse(googleSheetLocation)
     questions = model.questions;
 
     // Create the LUIS app
-    // return createApp(configCreateApp);
+    return createApp(configCreateApp);
   })
-  .then(() => {
-    LUISappId = '94640df8-9327-4bd7-9484-aa58119f6ab0';
-
+  .then(appId => {
+    LUISappId = appId;
     // Add intents
     configAddIntents.LUISappId = LUISappId;
     configAddIntents.intentList = intents;

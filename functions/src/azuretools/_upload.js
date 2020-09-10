@@ -10,21 +10,13 @@ const delayMS = 10000;
 const maxRetry = 100;
 
 // retry request if error or 429 received
-const retryStrategy = function (err, response) {
+const retryStrategy = (err, response) => {
   const shouldRetry = err || response.statusCode === 429;
-  if (shouldRetry) console.log('retrying add examples...');
+  // if (shouldRetry) console.log('retrying add examples...');
   return shouldRetry;
 };
 
-// send json batch as post.body to API
-const sendBatchToApi = async options => {
-  const response = await request(options);
-  // return {page: options.body, response:response};
-  return { response };
-};
-
-// main function to call
-const upload = async config => {
+const getRequestInBatch = intentsAndQuestions => {
   // break items into pages to fit max batch size
   const pages = [];
   let page = [];
@@ -33,9 +25,9 @@ const upload = async config => {
   console.log('Starting adding Questions...');
 
   // 批次，每100個為一個批次，每一百個送一個request出去
-  config.intents.forEach(intent => {
+  intentsAndQuestions.intents.forEach(intent => {
     // console.log('enter intents for each');
-    config.questions[intent].forEach(question => {
+    intentsAndQuestions.questions[intent].forEach(question => {
       // console.log('    enter question for each');
       page.push({
         text: question,
@@ -55,8 +47,28 @@ const upload = async config => {
     page = [];
   }
 
+  return pages;
+};
+
+// send json batch as post.body to API
+const sendBatchToApi = async options => {
+  const response = await request(options);
+  // console.log(`StatusCode: ${response.statusCode}`);
+  // console.log(options.body);
+  // return {page: options.body, response:response};
+  return { response };
+};
+
+// main function to call
+const upload = async config => {
   const uploadPromises = [];
   const url = config.uri.replace('default_id', config.LUISappId);
+
+  // 100 requests per batch
+  const pages = getRequestInBatch({
+    intents: config.intents,
+    questions: config.questions,
+  });
 
   // load up promise array
   pages.forEach(_page => {
