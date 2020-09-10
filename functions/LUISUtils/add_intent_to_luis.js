@@ -1,7 +1,7 @@
-const parse = require('./src/azuretools/_parse');
+const parse = require('../src/azuretools/_parse');
 // const createApp = require('./src/azuretools/_create');
-const addIntents = require('./src/azuretools/_intents');
-const upload = require('./src/azuretools/_upload');
+const addIntents = require('../src/azuretools/_intents');
+const upload = require('../src/azuretools/_upload');
 
 // Change these values
 const LUISauthoringKey = '6da613deaa9042beae670f765936fda3';

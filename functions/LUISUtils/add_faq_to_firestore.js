@@ -2,9 +2,9 @@
 const GoogleSpreadsheet = require('google-spreadsheet');
 const { promisify } = require('util');
 const admin = require('firebase-admin');
-const FirebaseAPI = require('./src/datasources/firebase');
+const FirebaseAPI = require('../src/datasources/firebase');
 
-const creds = require('../../../key_rootdir/smartcampus-1b31f-firebase-adminsdk-qamsd-a188096453.json');
+const creds = require('../../../../key_rootdir/smartcampus-1b31f-firebase-adminsdk-qamsd-a188096453.json');
 
 async function accessSpreadsheet() {
   const doc = new GoogleSpreadsheet(

@@ -4,10 +4,10 @@
 const request = require('requestretry');
 
 // time delay between requests
-const delayMS = 5000;
+const delayMS = 10000;
 
 // retry recount
-const maxRetry = 50;
+const maxRetry = 100;
 
 // retry request if error or 429 received
 const retryStrategy = function (err, response) {
@@ -54,8 +54,6 @@ const upload = async config => {
     pages.push(page);
     page = [];
   }
-
-  // console.log(pages);
 
   const uploadPromises = [];
   const url = config.uri.replace('default_id', config.LUISappId);
