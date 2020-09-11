@@ -10,10 +10,10 @@ const linebot = require('linebot');
 const LUISappId = '8da0cc8e-6ca6-422b-957e-45d6184bcf1a';
 
 // YOUR-PREDICTION-KEY: Your LUIS authoring key, 32 character value. for test: 'e1a4a2cc5f1b40fbbb86eccedcca1c6f'
-const LUISPredictionKey = 'e1a4a2cc5f1b40fbbb86eccedcca1c6f';
+const LUISPredictionKey = '';
 
 // YOUR-AUTHORING-KEY: Starter_Key, for testing '6da613deaa9042beae670f765936fda3'
-const LUISAuthoringKey = '6da613deaa9042beae670f765936fda3';
+const LUISAuthoringKey = '';
 
 // YOUR-PREDICTION-ENDPOINT: Replace this with your authoring key endpoint
 const LUISPriditionEndpoint = 'https://japaneast.api.cognitive.microsoft.com/';
@@ -47,7 +47,7 @@ const bot = linebot({
   channelSecret: '59fadb2dcb6c66e338ad7273806d5a10', // for test: '59fadb2dcb6c66e338ad7273806d5a10'
   // for test: 'dIiLIe5t6UO+BZo5VzGX951whXwdEMtXASzl6x8dP0spZG4Q8M1mbPMq/jqfdGz13X7p3bVzYbWBnTYhJenl8gSAC63W3QB9H0YdnGmb6aqZkgn5G5F34BTZHsixn6bWi5YXG1S52oQ4x1raGU2XrAdB04t89/1O/w1cDnyilFU='
   channelAccessToken:
-    'dIiLIe5t6UO+BZo5VzGX951whXwdEMtXASzl6x8dP0spZG4Q8M1mbPMq/jqfdGz13X7p3bVzYbWBnTYhJenl8gSAC63W3QB9H0YdnGmb6aqZkgn5G5F34BTZHsixn6bWi5YXG1S52oQ4x1raGU2XrAdB04t89/1O/w1cDnyilFU=',
+    '',
 });
 
 // 當有人傳送訊息給Bot時
