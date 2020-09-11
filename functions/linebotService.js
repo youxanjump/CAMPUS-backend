@@ -7,13 +7,13 @@
 const linebot = require('linebot');
 
 // YOUR-APP-ID: The App ID GUID found on the www.luis.ai Application Settings page.
-const LUISappId = '94640df8-9327-4bd7-9484-aa58119f6ab0';
+const LUISappId = '8da0cc8e-6ca6-422b-957e-45d6184bcf1a';
 
 // YOUR-PREDICTION-KEY: Your LUIS authoring key, 32 character value. for test: 'e1a4a2cc5f1b40fbbb86eccedcca1c6f'
-const LUISPredictionKey = '';
+const LUISPredictionKey = 'e1a4a2cc5f1b40fbbb86eccedcca1c6f';
 
 // YOUR-AUTHORING-KEY: Starter_Key, for testing '6da613deaa9042beae670f765936fda3'
-const LUISAuthoringKey = '';
+const LUISAuthoringKey = '6da613deaa9042beae670f765936fda3';
 
 // YOUR-PREDICTION-ENDPOINT: Replace this with your authoring key endpoint
 const LUISPriditionEndpoint = 'https://japaneast.api.cognitive.microsoft.com/';
@@ -44,13 +44,14 @@ const configAddUtterances = {
 // 用於辨識Line Channel的資訊
 const bot = linebot({
   channelId: '1654797428',
-  channelSecret: '', // for test: '59fadb2dcb6c66e338ad7273806d5a10'
+  channelSecret: '59fadb2dcb6c66e338ad7273806d5a10', // for test: '59fadb2dcb6c66e338ad7273806d5a10'
   // for test: 'dIiLIe5t6UO+BZo5VzGX951whXwdEMtXASzl6x8dP0spZG4Q8M1mbPMq/jqfdGz13X7p3bVzYbWBnTYhJenl8gSAC63W3QB9H0YdnGmb6aqZkgn5G5F34BTZHsixn6bWi5YXG1S52oQ4x1raGU2XrAdB04t89/1O/w1cDnyilFU='
-  channelAccessToken: '',
+  channelAccessToken:
+    'dIiLIe5t6UO+BZo5VzGX951whXwdEMtXASzl6x8dP0spZG4Q8M1mbPMq/jqfdGz13X7p3bVzYbWBnTYhJenl8gSAC63W3QB9H0YdnGmb6aqZkgn5G5F34BTZHsixn6bWi5YXG1S52oQ4x1raGU2XrAdB04t89/1O/w1cDnyilFU=',
 });
 
 // 當有人傳送訊息給Bot時
-bot.on('message', function (event) {
+bot.on('message', event => {
   const firebaseAPIinstance = new FirebaseAPI({ admin });
 
   // The utterance you want to use.
@@ -94,15 +95,30 @@ bot.on('message', function (event) {
       });
 
     // Add the user_question to LUIS to train
+    console.log(`start add question to LUIS...`);
     const questions = {};
     questions[intent] = [utterance];
     try {
       configAddUtterances.intents = [intent];
       configAddUtterances.questions = questions;
       upload(configAddUtterances);
+      console.log(`succeed to add question to LUIS`);
     } catch (err) {
       console.log(`Add the user_question to LUIS error: ${err}`);
     }
+
+    // Add the User_question to Firestore to analyze
+    await firebaseAPIinstance
+      .addNewQuestion({
+        userintent: intent,
+        userquestion: utterance,
+      })
+      .then(() => {
+        console.log(`add question succeed`);
+      })
+      .catch(error => {
+        console.error(error);
+      });
   };
 
   console.log(`user's question: ${utterance}`);
@@ -119,6 +135,6 @@ admin.initializeApp({
 });
 
 // Bot所監聽的webhook路徑與port
-bot.listen('/linewebhook', 3000, function () {
+bot.listen('/linewebhook', 3000, () => {
   console.log('[BOT已準備就緒]');
 });
