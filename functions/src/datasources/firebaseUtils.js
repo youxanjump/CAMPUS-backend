@@ -88,8 +88,8 @@ async function getIntentFromDocRef(docRef) {
   await docRef.get().then(function (doc) {
     if (doc.exists) {
       data = {
-        userIntent: doc.data().userIntent,
-        userAnswer: doc.data().userAnswer,
+        userintent: doc.data().userintent,
+        useranswer: doc.data().useranswer,
       };
       // console.log(data);
     }

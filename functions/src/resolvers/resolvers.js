@@ -21,8 +21,8 @@ const queryResolvers = {
       dataSources.firebaseAPI.getList('missionList'),
     discoveryList: async (_, __, { dataSources }) =>
       dataSources.firebaseAPI.getList('discoveryList'),
-    intentAnswer: async (_, { userIntent }, { dataSources }) =>
-      dataSources.firebaseAPI.getAnswer(userIntent),
+    intentAnswer: async (_, { intent }, { dataSources }) =>
+      dataSources.firebaseAPI.getAnswer(intent),
   },
 };
 

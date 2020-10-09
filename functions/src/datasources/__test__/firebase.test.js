@@ -61,8 +61,8 @@ describe('test data add operation', () => {
 
     const docData = await firebaseAPIinstance.addNewIntent({ data });
     expect(docData).toMatchObject({
-      userIntent: data.userIntent,
-      userAnswer: data.userAnswer,
+      userintent: data.userintent,
+      useranswer: data.useranswer,
     });
   });
   test('test `setTagDetailToFirestore` with some empty fields', async () => {

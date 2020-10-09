@@ -287,15 +287,18 @@ class FirebaseAPI extends DataSource {
 
   /**
    * get the answer of the user's question
-   * @param {String} param.userIntent the intent that user's question meaning
+   * @param {String} param.userintent the intent that user's question meaning
    */
-  async getAnswer({ userIntent }) {
-    const queryIntent = await this.firestore
-      .collection('intent')
-      .where('userIntent', '==', userIntent)
+  async getAnswer(userintent) {
+    const intentRef = await this.firestore.collection('intent');
+    let queryIntent;
+    const querySnapshot = await intentRef
+      .where('userintent', '==', userintent)
       .get();
-    // console.log(target_intent);
-    return queryIntent.u_answer;
+    querySnapshot.forEach(doc => {
+      queryIntent = doc.data();
+    });
+    return queryIntent.useranswer;
   }
 
   /**
@@ -404,26 +407,88 @@ class FirebaseAPI extends DataSource {
 
   /**
    * Add user's FAQ or some other question and answer
-   * @param {String} param.userIntent
-   * @param {String} param.userAnswer
+   * @param {String} param.userintent
+   * @param {String} param.useranswer
    */
   async addNewIntent({ data }) {
-    const { userIntent, userAnswer } = data;
+    const { userintent, useranswer } = data;
     const intentRef = await this.firestore.collection('intent');
     let retData;
     await intentRef
       .add({
-        userIntent,
-        userAnswer,
+        userintent,
+        useranswer,
       })
-      .then(function (docRef) {
+      .then(docRef => {
         retData = getIntentFromDocRef(intentRef.doc(docRef.id));
         console.log(`finish add new intent`);
       })
-      .catch(function (error) {
+      .catch(error => {
         console.error('error add document: ', error);
       });
     return retData;
+  }
+
+  /**
+   * Add user's question to certain intent
+   * @param {String} param.userintent
+   * @param {String} param.userquestion
+   */
+  async addNewQuestion(data) {
+    const { userintent, userquestion } = data;
+    const intentRef = await this.firestore.collection('intent');
+    const querySnapshot = await intentRef
+      .where('userintent', '==', userintent)
+      .get();
+
+    let docRef;
+    querySnapshot.forEach(doc => {
+      docRef = doc._ref;
+    });
+
+    docRef
+      .collection('questions')
+      .where('userquestion', '==', userquestion)
+      .get()
+      .then(async question => {
+        let _doc;
+        question.forEach(doc => {
+          _doc = doc;
+        });
+        if (_doc.data().userquestion === userquestion) {
+          console.log(`the question '${userquestion}' has been asked before `);
+          question.forEach(async _question => {
+            const questionaskedtimes = _question.data().questionaskedtimes + 1;
+            await _question._ref
+              .set({
+                userquestion,
+                questionaskedtimes,
+              })
+              .then(() => {
+                console.log(`finish modify the question times`);
+              })
+              .catch(error => {
+                console.error(error);
+              });
+          });
+        } else {
+          console.log(`add new question '${userquestion}'...`);
+          await docRef
+            .collection('questions')
+            .add({
+              userquestion,
+              questionaskedtimes: 1,
+            })
+            .then(() => {
+              console.log(
+                `finish add the question to the intent '${userintent}'`
+              );
+            })
+            .catch(error => {
+              console.error(error);
+            });
+        }
+      });
   }
 } // class FirebaseAPI
 
