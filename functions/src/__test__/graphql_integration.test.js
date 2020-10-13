@@ -32,7 +32,7 @@ describe('test graphql query', () => {
     const { query } = createTestClient(server);
     queryClient = query;
 
-    // set up fake data to firestore
+    // set up firestore instance
     firestore = admin.firestore();
   });
   afterAll(async () => {
