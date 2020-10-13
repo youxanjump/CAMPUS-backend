@@ -6,7 +6,7 @@ const { createTestClient } = require('apollo-server-testing');
 const gql = require('graphql-tag');
 
 const apolloServer = require('./apolloTestServer');
-const FirebaseAPI = require('../datasources/firebase');
+const FirebaseAPI = require('../firebase');
 const {
   fakeTagData,
   mockFirebaseAdmin,
@@ -32,7 +32,7 @@ describe('test graphql query', () => {
     const { query } = createTestClient(server);
     queryClient = query;
 
-    // set up firestore instance
+    // set up fake data to firestore
     firestore = admin.firestore();
   });
   afterAll(async () => {

@@ -16,8 +16,6 @@ const Tag = `type Tag {
   streetViewInfo: StreetView
   status: Status
   statusHistory: [Status]!
-  numberOfUpVote: Int
-  hasUpVote: Boolean
 }`;
 
 const Category = `type Category {
@@ -65,16 +63,6 @@ const Discovery = `type Discovery {
 }`;
 
 // mutation
-const updateUpVoteAction = `enum updateUpVoteAction {
-  UPVOTE
-  CANCEL_UPVOTE
-}`;
-
-const updateUpVoteResponse = `type updateUpVoteResponse {
-  tagId: String!
-  numberOfUpVote: Int
-  hasUpVote: Boolean
-}`;
 
 const AddNewTagResponse = `type AddNewTagResponse {
   tag: Tag!
@@ -134,8 +122,6 @@ module.exports = {
   StreetView,
   Mission,
   Discovery,
-  updateUpVoteAction,
-  updateUpVoteResponse,
   AddNewTagResponse,
   TagUpdateInput,
   AddNewTagDataInput,
