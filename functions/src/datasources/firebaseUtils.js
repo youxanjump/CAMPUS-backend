@@ -51,21 +51,23 @@ function getDefaultStatus(missionName) {
  * Get latest status of current tag document `status` collection
  * @param {DocumentReference} docRef The document we want to get the latest
  *   status
- * @param {data} Boolean if true, return data, else return DocumentReference
+ * @param {data} Boolean if true, return data, else return DocumentSnapshot
  */
-async function getLatestStatus(docRef, data = true) {
+async function getLatestStatus(docRef) {
   const statusDocSnap = await docRef
     .collection('status')
     .orderBy('createTime', 'desc')
     .limit(1)
     .get();
+  if (statusDocSnap.empty) {
+    throw Error('No status document!');
+  }
   const statusRes = [];
   statusDocSnap.forEach(doc => {
-    if (data) {
-      statusRes.push(doc.data());
-    } else {
-      statusRes.push(doc.ref);
-    }
+    statusRes.push({
+      statusDocRef: doc.ref,
+      ...doc.data(),
+    });
   });
   const [currentStatus] = statusRes;
   return currentStatus;
@@ -76,9 +78,10 @@ async function getLatestStatus(docRef, data = true) {
  * @param {DocumentReference} docRef The document we want to get the data
  */
 async function getDataFromTagDocRef(docRef) {
+  const { statusDocRef: _, ...status } = await getLatestStatus(docRef);
   const data = {
     id: docRef.id,
-    status: await getLatestStatus(docRef),
+    status,
     // move to resolver
     // statusHistory: await getStatusHistory(docRef),
     ...(await docRef.get()).data(),

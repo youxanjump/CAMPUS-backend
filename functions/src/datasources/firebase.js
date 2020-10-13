@@ -335,10 +335,8 @@ class FirebaseAPI extends DataSource {
       statusName: getDefaultStatus(category.missionName),
       createTime: this.admin.firestore.FieldValue.serverTimestamp(),
       createUserId: uid,
+      numberOfUpVote: category.missionName === '問題任務' ? 0 : null,
     };
-    if (category.missionName === '問題任務') {
-      defaultStatus.numberOfUpVote = 0;
-    }
 
     const tagGeoRef = this.geofirestore.collection('tagData');
 
@@ -419,32 +417,41 @@ class FirebaseAPI extends DataSource {
    * @param {String} param.action upvote or cancel upvote
    * @return {object} the latest status data
    */
-  async updateUpVoteStatus({ tagId, action, userInfo }) {
+  async updateNumberOfUpVote({ tagId, action, userInfo }) {
     const { logIn, uid } = userInfo;
     checkUserLogIn(logIn);
     const tagDocRef = this.firestore.collection('tagData').doc(tagId);
 
-    const tagStatusDocRef = await getLatestStatus(tagDocRef, false);
+    const {
+      statusDocRef: tagStatusDocRef,
+      numberOfUpVote,
+    } = await getLatestStatus(tagDocRef);
+    // if there is no status or the numberOfUpVote is null, raise error
+    if (!tagStatusDocRef) {
+      throw Error('No status in this tag.');
+    }
+    if (!numberOfUpVote && numberOfUpVote !== 0) {
+      throw Error('No need to use NumberOfUpVote in this status.');
+    }
+
     const tagStatusUpVoteUserRef = tagStatusDocRef
       .collection('UpVoteUser')
       .doc(uid);
-
     await this.firestore.runTransaction(async t => {
-      const tagStatusDocSnap = await t.get(tagStatusDocRef);
       const tagStatusUpVoteUserSnap = await t.get(tagStatusUpVoteUserRef);
       if (action === upVoteActionName && !tagStatusUpVoteUserSnap.exists) {
-        tagStatusDocSnap.update({
-          numberOfUpVote: this.firestore.FieldValue.increment(1),
+        t.update(tagStatusDocRef, {
+          numberOfUpVote: this.admin.firestore.FieldValue.increment(1),
         });
-        tagStatusUpVoteUserSnap.set({ hasUpVote: true });
+        t.set(tagStatusUpVoteUserRef, { hasUpVote: true });
       } else if (
         action === cancelUpVoteActionName &&
         tagStatusUpVoteUserSnap.exists
       ) {
-        tagStatusDocSnap.update({
-          numberOfUpVote: this.firestore.FieldValue.increment(-1),
+        t.update(tagStatusDocRef, {
+          numberOfUpVote: this.admin.firestore.FieldValue.increment(-1),
         });
-        tagStatusUpVoteUserSnap.delete();
+        t.delete(tagStatusUpVoteUserRef);
       }
     });
   }
