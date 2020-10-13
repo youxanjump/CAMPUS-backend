@@ -1,6 +1,5 @@
 /** @module Firebase */
 const { DataSource } = require('apollo-datasource');
-const { ForbiddenError } = require('apollo-server');
 const { AuthenticationError } = require('apollo-server-express');
 // geofirestore
 const { GeoFirestore } = require('geofirestore');
@@ -9,8 +8,12 @@ const {
   getImageUploadUrls,
   getDefaultStatus,
   getDataFromTagDocRef,
+  getLatestStatus,
   getIntentFromDocRef,
+  checkUserLogIn,
 } = require('./firebaseUtils');
+
+const { upVoteActionName, cancelUpVoteActionName } = require('./constants');
 
 /** Handle action with firebase
  *  @todo Rewrite this class name
@@ -161,7 +164,7 @@ class FirebaseAPI extends DataSource {
     const list = [];
     const querySnapshot = await this.firestore
       .collection('tagData')
-      .where('createUserID', '==', uid)
+      .where('createUserId', '==', uid)
       .orderBy('createTime', 'desc')
       .get();
     querySnapshot.forEach(doc => {
@@ -327,13 +330,15 @@ class FirebaseAPI extends DataSource {
       // originally tagDetail
       createTime: this.admin.firestore.FieldValue.serverTimestamp(),
       lastUpdateTime: this.admin.firestore.FieldValue.serverTimestamp(),
-      createUserID: uid,
+      createUserId: uid,
       description: description || '',
       streetViewInfo: streetViewInfo || null,
     };
     const defaultStatus = {
       statusName: getDefaultStatus(category.missionName),
       createTime: this.admin.firestore.FieldValue.serverTimestamp(),
+      createUserId: uid,
+      numberOfUpVote: category.missionName === '問題任務' ? 0 : null,
     };
 
     const tagGeoRef = this.geofirestore.collection('tagData');
@@ -363,10 +368,7 @@ class FirebaseAPI extends DataSource {
   async addNewTagData({ data, userInfo }) {
     // check user status
     const { logIn, uid } = userInfo;
-    if (!logIn) {
-      // TODO: anonymous user data or throw authorize error
-      throw new ForbiddenError('User is not login');
-    }
+    checkUserLogIn(logIn);
     // add tagData to firestore
     const tagDataDocumentData = await this.addTagDataToFirestore({ data, uid });
 
@@ -384,17 +386,21 @@ class FirebaseAPI extends DataSource {
   } // function async updateTagData
 
   /**
-   * Update new status to new the new platform
+   * Insert latest status to the history
    * @param {object} param
    * @param {String} param.tagId the id of the tag document we want to update
    *  status
    * @param {String} param.statusName the latest status name we want to update
    * @return {object} the latest status data
    */
-  async updateTagStatus({ tagId, statusName }) {
+  async updateTagStatus({ tagId, statusName, userInfo }) {
+    const { logIn, uid } = userInfo;
+    checkUserLogIn(logIn);
+
     const statusData = {
       statusName,
       createTime: this.admin.firestore.FieldValue.serverTimestamp(),
+      createUserId: uid,
     };
     const docRef = await this.firestore
       .collection('tagData')
@@ -403,6 +409,54 @@ class FirebaseAPI extends DataSource {
       .add(statusData);
 
     return (await docRef.get()).data();
+  }
+
+  /**
+   * Update user's upvote status to specific tag. Update the numberOfUpVote and
+   * record the user has upvoted.
+   * @param {object} param
+   * @param {String} param.tagId the id of the tag document we want to update
+   *  status
+   * @param {String} param.action upvote or cancel upvote
+   * @return {object} the latest status data
+   */
+  async updateNumberOfUpVote({ tagId, action, userInfo }) {
+    const { logIn, uid } = userInfo;
+    checkUserLogIn(logIn);
+    const tagDocRef = this.firestore.collection('tagData').doc(tagId);
+
+    const {
+      statusDocRef: tagStatusDocRef,
+      numberOfUpVote,
+    } = await getLatestStatus(tagDocRef);
+    // if there is no status or the numberOfUpVote is null, raise error
+    if (!tagStatusDocRef) {
+      throw Error('No status in this tag.');
+    }
+    if (!numberOfUpVote && numberOfUpVote !== 0) {
+      throw Error('No need to use NumberOfUpVote in this status.');
+    }
+
+    const tagStatusUpVoteUserRef = tagStatusDocRef
+      .collection('UpVoteUser')
+      .doc(uid);
+    await this.firestore.runTransaction(async t => {
+      const tagStatusUpVoteUserSnap = await t.get(tagStatusUpVoteUserRef);
+      if (action === upVoteActionName && !tagStatusUpVoteUserSnap.exists) {
+        t.update(tagStatusDocRef, {
+          numberOfUpVote: this.admin.firestore.FieldValue.increment(1),
+        });
+        t.set(tagStatusUpVoteUserRef, { hasUpVote: true });
+      } else if (
+        action === cancelUpVoteActionName &&
+        tagStatusUpVoteUserSnap.exists
+      ) {
+        t.update(tagStatusDocRef, {
+          numberOfUpVote: this.admin.firestore.FieldValue.increment(-1),
+        });
+        t.delete(tagStatusUpVoteUserRef);
+      }
+    });
   }
 
   /**
