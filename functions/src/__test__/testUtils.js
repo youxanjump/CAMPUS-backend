@@ -102,13 +102,26 @@ function mockFirebaseAdmin(projectId) {
 /**
  * Add fakeData to firestore
  * @param {FirebaseAPI} firestore Firestore instance to add fake data
+ * @param {Boolean} testNumberOfUpVote true if we want to add fake data to test
+ *   numberOfUpVote
  * @return {AddNewTagResponse} Contain the upload tag information, and image
  */
-async function addFakeDataToFirestore(firebaseAPIinstance) {
+async function addFakeDataToFirestore(
+  firebaseAPIinstance,
+  testNumberOfUpVote = false
+) {
+  const hasNumberOfUpVoteCategory = {
+    missionName: '問題任務',
+    subTypeName: '',
+    targetName: '',
+  };
   const data = {
     ...fakeTagData,
     imageNumber: 2,
   };
+  if (testNumberOfUpVote) {
+    data.category = { ...hasNumberOfUpVoteCategory };
+  }
 
   return firebaseAPIinstance.addNewTagData({ data, userInfo: fakeUserInfo });
 }
