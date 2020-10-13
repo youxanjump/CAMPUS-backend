@@ -3,7 +3,7 @@ const tagResolvers = {
     createTime: async (tag, _, __) => tag.createTime.toDate().toString(),
     lastUpdateTime: async (tag, _, __) =>
       tag.lastUpdateTime.toDate().toString(),
-    createUser: async (tag, _, __) => ({ uid: tag.createUserId }),
+    createUser: async (tag, _, __) => ({ uid: tag.createUserID }),
     imageUrl: async (tag, _, { dataSources }) =>
       dataSources.firebaseAPI.getImageUrls({ tagID: tag.id }),
     statusHistory: async (tag, _, { dataSources }) =>
@@ -14,7 +14,6 @@ const tagResolvers = {
 const statusResolvers = {
   Status: {
     createTime: async (status, _, __) => status.createTime.toDate().toString(),
-    createUser: async (status, _, __) => ({ uid: status.createUserId }),
   },
 };
 

@@ -4,7 +4,7 @@
 // const firebase = require('@firebase/testing');
 const admin = require('firebase-admin');
 // const serviceAccount = require('D:/peaceful-nature-268409-8bb978d93c80.json');
-const FirebaseAPI = require('../datasources/firebase');
+const FirebaseAPI = require('../firebase');
 
 // start the firestore emulator
 // port 4400
