@@ -18,13 +18,10 @@ const LUISPriditionEndpoint = 'https://westus.api.cognitive.microsoft.com/';
 const admin = require('firebase-admin');
 const request = require('request');
 
-// if you dont know what it is, check 'https://wcc723.github.io/javascript/2017/12/15/javascript-use-strict/'
-// ('use strict');
 // PAGE_ACCESS_TOKEN = EAAFN87dRCNgBAATZALMk4B8Pw7ZCrdyXsPY3AjPMGcVVFPmGrUjJF8WoIXdhRRRelZBLT51UTHrLzxLPvoMdex5CpvrOVAduquIZCngXzEfMtzDgjUDIFZA0hZBFyAG73pQr8rqwV9WjhiqbtiwfdvBQ4byon1sInBADulnegcZBwZDZD
 const PAGE_ACCESS_TOKEN = '';
 const express = require('express');
 const bodyParser = require('body-parser');
-// const axios = require('axios');
 const requestPromise = require('request-promise');
 const queryString = require('querystring');
 const verifyWebhook = require('./src/verify-webhook');
@@ -41,7 +38,6 @@ const FirebaseAPI = require('./src/datasources/firebase');
 }; */
 
 const app = express();
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.get('/messengerwebhook', verifyWebhook);
@@ -51,6 +47,7 @@ admin.initializeApp({
   storageBucket: 'gs://smartcampus-1b31f.appspot.com',
 });
 
+// Send message 'response' to user with id 'senderPsid' thought facebook messenger
 function callSendAPI(senderPsid, response) {
   // Construct the message body
   const requestBody = {
@@ -78,63 +75,12 @@ function callSendAPI(senderPsid, response) {
   );
 }
 
-function handleMessage(senderPsid, receivedMessage, answer) {
-  let response;
-
-  // Checks if the message contains text
-  if (receivedMessage.text) {
-    // Create the payload for a basic text message, which
-    // will be added to the body of our request to the Send API
-    response = {
-      text: answer,
-    };
-  } else if (receivedMessage.attachments) {
-    // Get the URL of the message attachment
-    /* let attachment_url = receivedMessage.attachments[0].payload.url;
-    response = {
-      "attachment": {
-        "type": "template",
-        "payload": {
-          "template_type": "generic",
-          "elements": [{
-            "title": "Is this the right picture?",
-            "subtitle": "Tap a button to answer.",
-            "image_url": attachment_url,
-            "buttons": [
-              {
-                "type": "postback",
-                "title": "Yes!",
-                "payload": "yes",
-              },
-              {
-                "type": "postback",
-                "title": "No!",
-                "payload": "no",
-              }
-            ],
-          }]
-        }
-      }
-    } */
-  }
+function handleMessage(senderPsid, answer) {
+  const response = {
+    text: answer,
+  };
 
   // Send the response message
-  callSendAPI(senderPsid, response);
-}
-
-function handlePostback(senderPsid, receivedPostback) {
-  console.log('ok');
-  let response;
-  // Get the payload for the postback
-  const { payload } = receivedPostback;
-
-  // Set the response based on the postback payload
-  if (payload === 'yes') {
-    response = { text: 'Thanks!' };
-  } else if (payload === 'no') {
-    response = { text: 'Oops, try sending another image.' };
-  }
-  // Send the message to acknowledge the postback
   callSendAPI(senderPsid, response);
 }
 
@@ -170,29 +116,17 @@ app.post('/messengerwebhook', (req, res) => {
       const pridictionUri = `${LUISPriditionEndpoint}luis/prediction/v3.0/apps/${LUISappId}/slots/production/predict?${queryString.stringify(
         queryParams
       )}`;
-
-      // Analyze a string utterance.
-      // const getPrediction = async () => {
-      // console.log(`get prediction`);
-      // Send the REST call.
       const response = await requestPromise(pridictionUri);
-      // console.log(`got prediction`);
-      // Get the topIntent
       const intent = JSON.parse(response).prediction.topIntent;
       const answer = await firebaseAPIinstance.getAnswer(intent);
 
       // Display the response from the REST call.
       console.log(`top intent: ${intent}`);
       console.log(`answer: ${answer}`);
-      // };
 
       // Check if the event is a message or postback and
       // pass the event to the appropriate handler function
-      if (webhookEvent.message) {
-        handleMessage(senderPsid, webhookEvent.message, answer);
-      } else if (webhookEvent.postback) {
-        handlePostback(senderPsid, webhookEvent.postback, answer);
-      }
+      handleMessage(senderPsid, answer);
     });
     // Return a '200 OK' response to all events
     res.status(200).send('EVENT_RECEIVED');
