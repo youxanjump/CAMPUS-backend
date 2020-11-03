@@ -1,41 +1,22 @@
-// YOUR-APP-ID: The App ID GUID found on the www.luis.ai Application Settings page.
-const LUISappId = '211d2292-7bc4-49bd-b4fc-06a5c96445d1';
-
-// YOUR-PREDICTION-KEY: Your LUIS authoring key, 32 character value. for test: '9c5c12b84a98428294d6d4c0ee01b73a'
-const LUISPredictionKey = '';
-
-// YOUR-AUTHORING-KEY: Starter_Key, for testing '9c5c12b84a98428294d6d4c0ee01b73a'
-// const LUISAuthoringKey = '';
-
-// YOUR-PREDICTION-ENDPOINT: Replace this with your authoring key endpoint
-const LUISPriditionEndpoint = 'https://westus.api.cognitive.microsoft.com/';
-
-// YOUR-API-ENDPOINT: Starter_Key
-// const LUISEndpoint = 'https://westus.api.cognitive.microsoft.com/';
-
-// const LUISversionId = '0.1';
-
 const admin = require('firebase-admin');
 const request = require('request');
 
-// PAGE_ACCESS_TOKEN = EAAFN87dRCNgBAATZALMk4B8Pw7ZCrdyXsPY3AjPMGcVVFPmGrUjJF8WoIXdhRRRelZBLT51UTHrLzxLPvoMdex5CpvrOVAduquIZCngXzEfMtzDgjUDIFZA0hZBFyAG73pQr8rqwV9WjhiqbtiwfdvBQ4byon1sInBADulnegcZBwZDZD
-const PAGE_ACCESS_TOKEN = '';
 const express = require('express');
 const bodyParser = require('body-parser');
 const requestPromise = require('request-promise');
 const queryString = require('querystring');
-const verifyWebhook = require('./src/verify-webhook');
+
 const FirebaseAPI = require('./src/datasources/firebase');
 
-/* add utterances parameters */
-/* const configAddUtterances = {
-  LUISSubscriptionKey: LUISAuthoringKey,
+// For LUIS configure
+const {
   LUISappId,
-  LUISversionId,
-  question: '',
-  intent: '',
-  uri: `${LUISEndpoint}luis/authoring/v3.0-preview/apps/${LUISappId}/versions/${LUISversionId}/examples`,
-}; */
+  LUISPredictionKey,
+  LUISPriditionEndpoint,
+} = require('./src/luis_config');
+
+// For Mesenger configure
+const { verifyWebhook, PAGE_ACCESS_TOKEN } = require('./src/verify-webhook');
 
 const app = express();
 app.use(bodyParser.json());
@@ -47,7 +28,8 @@ admin.initializeApp({
   storageBucket: 'gs://smartcampus-1b31f.appspot.com',
 });
 
-// Send message 'response' to user with id 'senderPsid' thought facebook messenger
+// callSendAPI & handleMessage為用來回傳訊息給Messenger的function
+// 因為fb messemger不像line有提供比較完善的API，所以有些東西要自己做
 function callSendAPI(senderPsid, response) {
   // Construct the message body
   const requestBody = {
@@ -84,7 +66,9 @@ function handleMessage(senderPsid, answer) {
   callSendAPI(senderPsid, response);
 }
 
-// Accepts POST requests at /messengerwebhook endpoint
+// 當有人傳送訊息給Messenger Chatbot時，會執行的動作
+// 也是因為不像line有提供比較完善的API，所以寫法比較沒那麼直覺
+// 需要用到一些比較原始的Post之類的東西
 app.post('/messengerwebhook', (req, res) => {
   const firebaseAPIinstance = new FirebaseAPI({ admin });
 
@@ -116,6 +100,7 @@ app.post('/messengerwebhook', (req, res) => {
       const pridictionUri = `${LUISPriditionEndpoint}luis/prediction/v3.0/apps/${LUISappId}/slots/production/predict?${queryString.stringify(
         queryParams
       )}`;
+
       const response = await requestPromise(pridictionUri);
       const intent = JSON.parse(response).prediction.topIntent;
       const answer = await firebaseAPIinstance.getAnswer(intent);
@@ -136,4 +121,4 @@ app.post('/messengerwebhook', (req, res) => {
   }
 });
 
-app.listen(5000, () => console.log('Express server is listening on port 5000'));
+app.listen(5000, () => console.log('[FACEBOOK MESSENGER CHATBOT已準備就緒]'));
