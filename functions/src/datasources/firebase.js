@@ -410,18 +410,18 @@ class FirebaseAPI extends DataSource {
    * @param {String} param.userintent
    * @param {String} param.useranswer
    */
-  async addNewIntent({ data }) {
-    const { userintent, useranswer } = data;
+  async addNewIntent(data) {
+    const { intent, answer } = data;
     const intentRef = await this.firestore.collection('intent');
     let retData;
     await intentRef
       .add({
-        userintent,
-        useranswer,
+        intent,
+        answer,
       })
       .then(docRef => {
         retData = getIntentFromDocRef(intentRef.doc(docRef.id));
-        console.log(`finish add new intent`);
+        console.log(`\nfinish add new intent\nintent: ${intent}\nanswer ${answer}`);
       })
       .catch(error => {
         console.error('error add document: ', error);

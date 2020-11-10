@@ -8,26 +8,37 @@ const creds = require('../../../../key_rootdir/smartcampus-1b31f-firebase-admins
 
 async function accessSpreadsheet() {
   const doc = new GoogleSpreadsheet(
-    '1CNvGbW8GNO52t6pMSI4pBTaGfeA8HAkrWdgc2dhWRg4'
+    '1IFu5-BWDIfa5RaysQoUCzN4WJyU_Qg9bgZ356uexw4Y'
   );
   await promisify(doc.useServiceAccountAuth)(creds);
   const info = await promisify(doc.getInfo)();
-  const sheet = info.worksheets[0];
+  const sheet = info.worksheets;
+  const sheetLength = info.worksheets.length;
   const firebaseAPIinstance = new FirebaseAPI({ admin });
-  const rows = await promisify(sheet.getRows)({
-    offset: 1,
-  });
 
-  rows.forEach(async faq => {
-    const data = { ...faq };
-    // add intent and all the answer to firestore
-    // await firebaseAPIinstance.addNewIntent({data});
+  console.log('Start parsing Google Sheet...');
 
-    // send intent to firestore and get answer from there
-    const intent = data.userintent;
-    const answer = await firebaseAPIinstance.getAnswer(intent);
-    console.log(`Intent : ${intent}\nAnswer : ${answer}\n`);
-  });
+  for (let i = 0; i < sheetLength; i += 1) {
+    const cells = await promisify(sheet[i].getCells)({
+      'min-row': 2,
+      'min-col': 1,
+      'return-empty': false,
+    });
+    let intent, answer;
+    for (const cell of cells) {
+      let ifAnswerSetted = false;
+      if (cell.col === 1) {
+        intent = cell.value;
+      } else if(cell.col === 2){
+        answer = cell.value;
+        ifAnswerSetted = true;
+      }
+      if(ifAnswerSetted){
+        await firebaseAPIinstance.addNewIntent({intent, answer});
+        console.log(`Success Add Intent : ${intent}\tAnswer : ${answer}\n`);
+      }
+    }
+  }
 }
 
 admin.initializeApp({
