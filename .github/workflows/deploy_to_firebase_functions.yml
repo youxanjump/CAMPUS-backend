@@ -6,6 +6,11 @@ on:
       - master
     paths:
       - 'functions/**'
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Enter the name of this workflow trigger'
+        required: true
 
 jobs:
   deploy:
