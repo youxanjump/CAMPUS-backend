@@ -30,6 +30,7 @@ const Status = `type Status {
   statusName: String!
   createTime: String!
   createUser: User
+  description: String
 }`;
 
 const User = `type User {

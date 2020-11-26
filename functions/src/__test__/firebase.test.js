@@ -147,6 +147,39 @@ describe('test data add/update operation', () => {
     const tagStatusCancelUpVoteUserDoc = await tagStatusUpVoteUserRef.get();
     expect(tagStatusCancelUpVoteUserDoc.exists).toBeFalsy();
   });
+  // NEXT
+  test('test `updateTagStatus', async () => {
+    // add tag data
+    const { tag } = await addFakeDataToFirestore(firebaseAPIinstance, true);
+    const { id: tagDocId } = tag;
+
+    // call target function
+    await firebaseAPIinstance.updateTagStatus({
+      tagId: tagDocId,
+      statusName: 'test status',
+      description: 'test update status',
+      userInfo: fakeUserInfo,
+    });
+
+    // check result, from firestore
+    const querySnapshot = await firestore
+      .collection('tagData')
+      .doc(tagDocId)
+      .collection('status')
+      .orderBy('createTime', 'desc')
+      .limit(1)
+      .get();
+
+    const docData = [];
+    querySnapshot.forEach(doc => {
+      docData.push(doc.data());
+    });
+    const [data] = docData;
+    expect(data).toMatchObject({
+      statusName: 'test status',
+      description: 'test update status',
+    });
+  });
 }); // end describe
 
 describe('test data read operation', () => {

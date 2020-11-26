@@ -33,12 +33,13 @@ const mutationResolvers = {
     },
     updateTagStatus: async (
       _,
-      { tagId, statusName },
+      { tagId, statusName, description },
       { dataSources, userInfo }
     ) => {
       return dataSources.firebaseAPI.updateTagStatus({
         tagId,
         statusName,
+        description,
         userInfo,
       });
     },
