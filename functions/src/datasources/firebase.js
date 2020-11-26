@@ -393,12 +393,13 @@ class FirebaseAPI extends DataSource {
    * @param {String} param.statusName the latest status name we want to update
    * @return {object} the latest status data
    */
-  async updateTagStatus({ tagId, statusName, userInfo }) {
+  async updateTagStatus({ tagId, statusName, description, userInfo }) {
     const { logIn, uid } = userInfo;
     checkUserLogIn(logIn);
 
     const statusData = {
       statusName,
+      description,
       createTime: this.admin.firestore.FieldValue.serverTimestamp(),
       createUserId: uid,
     };
