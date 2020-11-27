@@ -96,8 +96,12 @@ class FirebaseAPI extends DataSource {
    * @returns {string} user's name of the uid
    */
   async getUserName({ uid }) {
-    const { displayName } = await this.auth.getUser(uid);
-    return displayName;
+    try {
+      const { displayName, email } = await this.auth.getUser(uid);
+      return { displayName, email };
+    } catch (error) {
+      console.log('Error fetching user data:', error);
+    }
   }
 
   /** *** storage *** */
