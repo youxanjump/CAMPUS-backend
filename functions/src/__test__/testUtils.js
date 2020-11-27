@@ -65,6 +65,7 @@ function mockFirebaseAdmin(projectId) {
   }));
   const mockAuthGetUser = jest.fn(_uid => ({
     displayName: fakeUserInfo.displayName,
+    email: fakeUserInfo.email,
   }));
   admin.auth = jest.fn(() => ({
     verifyIdToken: mockAuthVerifyIdToken,

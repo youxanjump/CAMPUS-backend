@@ -101,6 +101,7 @@ class FirebaseAPI extends DataSource {
       return { displayName, email };
     } catch (error) {
       console.log('Error fetching user data:', error);
+      return null;
     }
   }
 
