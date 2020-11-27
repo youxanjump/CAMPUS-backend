@@ -22,11 +22,13 @@ const userResolvers = {
   User: {
     uid: async ({ uid }, _, __) => uid,
     displayName: async ({ uid }, _, { dataSources }) => {
-      const { displayName } = dataSources.firebaseAPI.getUserName({ uid });
+      const { displayName } = await dataSources.firebaseAPI.getUserName({
+        uid,
+      });
       return displayName;
     },
     email: async ({ uid }, _, { dataSources }) => {
-      const { email } = dataSources.firebaseAPI.getUserName({ uid });
+      const { email } = await dataSources.firebaseAPI.getUserName({ uid });
       return email;
     },
   },

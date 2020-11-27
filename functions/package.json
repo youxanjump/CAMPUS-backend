@@ -11,7 +11,7 @@
     "gen_docs": "npx jsdoc2md -f ./src/* ./src/datasources/* localIndex.js > ../docs/graphql.md",
     "serve_docs": "npx docsify serve ../docs",
     "firestore": "firebase emulators:start --only firestore",
-    "test": "jest --watchAll --runInBand --detectOpenHandles"
+    "test": "firebase emulators:exec \"jest\""
   },
   "engines": {
     "node": "10"
