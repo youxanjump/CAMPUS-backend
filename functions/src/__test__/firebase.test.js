@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 const firebase = require('@firebase/testing');
-const FirebaseAPI = require('../firebase');
+const FirebaseAPI = require('../datasources/firebase');
 const {
   mockFirebaseAdmin,
   fakeTagData,
@@ -13,21 +13,31 @@ const {
   clearFirestoreDatabase,
 } = require('./testUtils');
 
+const { getLatestStatus } = require('../datasources/firebaseUtils');
+
+const {
+  upVoteActionName,
+  cancelUpVoteActionName,
+} = require('../datasources/constants');
+
 // start the firestore emulator
 // port 8080
 const testProjectId = 'smartcampus-test';
 
-describe('test data add operation', () => {
+describe('test data add/update operation', () => {
   let firebaseAPIinstance;
+  let firestore;
   beforeAll(() => {
     const admin = mockFirebaseAdmin(testProjectId);
     firebaseAPIinstance = new FirebaseAPI({ admin });
-  });
-  afterAll(async () => {
-    await Promise.all(firebase.apps().map(app => app.delete()));
+
+    firestore = admin.firestore();
   });
   beforeEach(async () => {
     await clearFirestoreDatabase(testProjectId);
+  });
+  afterAll(async () => {
+    await Promise.all(firebase.apps().map(app => app.delete()));
   });
   test('test `addTagDataToFirestore`', async () => {
     const data = { ...fakeTagData };
@@ -48,10 +58,11 @@ describe('test data add operation', () => {
       status: {
         statusName: fakeStatusData.statusName,
         createTime: expect.any(firebase.firestore.Timestamp),
+        createUserId: uid,
       },
       createTime: expect.any(firebase.firestore.Timestamp),
       lastUpdateTime: expect.any(firebase.firestore.Timestamp),
-      createUserID: uid,
+      createUserId: uid,
       description: data.description,
       streetViewInfo: data.streetViewInfo,
     });
@@ -103,6 +114,71 @@ describe('test data add operation', () => {
       responseData.imageNumber
     );
     expect(responseData.imageUploadUrl).toContain('http://signed.url');
+  });
+  test('test `updateNumberOfUpVote`', async () => {
+    // TODO: add status before testing
+
+    // add 問題任務 tag data
+    const { tag } = await addFakeDataToFirestore(firebaseAPIinstance, true);
+    const { id: tagDocId } = tag;
+
+    await firebaseAPIinstance.updateNumberOfUpVote({
+      tagId: tagDocId,
+      action: upVoteActionName,
+      userInfo: fakeUserInfo,
+    });
+
+    // testing
+    const tagDocRef = firestore.collection('tagData').doc(tagDocId);
+    const { statusDocRef: tagStatusDocRef } = await getLatestStatus(tagDocRef);
+    const tagStatusUpVoteUserRef = tagStatusDocRef
+      .collection('UpVoteUser')
+      .doc(fakeUserInfo.uid);
+
+    const tagStatusUpVoteUserDoc = await tagStatusUpVoteUserRef.get();
+    expect(tagStatusUpVoteUserDoc.exists).toBeTruthy();
+
+    await firebaseAPIinstance.updateNumberOfUpVote({
+      tagId: tagDocId,
+      action: cancelUpVoteActionName,
+      userInfo: fakeUserInfo,
+    });
+
+    const tagStatusCancelUpVoteUserDoc = await tagStatusUpVoteUserRef.get();
+    expect(tagStatusCancelUpVoteUserDoc.exists).toBeFalsy();
+  });
+  // NEXT
+  test('test `updateTagStatus', async () => {
+    // add tag data
+    const { tag } = await addFakeDataToFirestore(firebaseAPIinstance, true);
+    const { id: tagDocId } = tag;
+
+    // call target function
+    await firebaseAPIinstance.updateTagStatus({
+      tagId: tagDocId,
+      statusName: 'test status',
+      description: 'test update status',
+      userInfo: fakeUserInfo,
+    });
+
+    // check result, from firestore
+    const querySnapshot = await firestore
+      .collection('tagData')
+      .doc(tagDocId)
+      .collection('status')
+      .orderBy('createTime', 'desc')
+      .limit(1)
+      .get();
+
+    const docData = [];
+    querySnapshot.forEach(doc => {
+      docData.push(doc.data());
+    });
+    const [data] = docData;
+    expect(data).toMatchObject({
+      statusName: 'test status',
+      description: 'test update status',
+    });
   });
 }); // end describe
 

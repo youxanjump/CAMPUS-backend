@@ -3,7 +3,11 @@ const tagResolvers = {
     createTime: async (tag, _, __) => tag.createTime.toDate().toString(),
     lastUpdateTime: async (tag, _, __) =>
       tag.lastUpdateTime.toDate().toString(),
-    createUser: async (tag, _, __) => ({ uid: tag.createUserID }),
+    createUser: async (tag, _, __) => ({
+      // TODO: `tag.createUserId` is old field name
+      // remove it if we clean the database
+      uid: tag.createUserId || tag.createUserID,
+    }),
     imageUrl: async (tag, _, { dataSources }) =>
       dataSources.firebaseAPI.getImageUrls({ tagID: tag.id }),
     statusHistory: async (tag, _, { dataSources }) =>
@@ -14,14 +18,23 @@ const tagResolvers = {
 const statusResolvers = {
   Status: {
     createTime: async (status, _, __) => status.createTime.toDate().toString(),
+    createUser: async (status, _, __) => ({ uid: status.createUserId }),
   },
 };
 
 const userResolvers = {
   User: {
     uid: async ({ uid }, _, __) => uid,
-    displayName: async ({ uid }, _, { dataSources }) =>
-      dataSources.firebaseAPI.getUserName({ uid }),
+    displayName: async ({ uid }, _, { dataSources }) => {
+      const { displayName } = await dataSources.firebaseAPI.getUserName({
+        uid,
+      });
+      return displayName;
+    },
+    email: async ({ uid }, _, { dataSources }) => {
+      const { email } = await dataSources.firebaseAPI.getUserName({ uid });
+      return email;
+    },
   },
 };
 

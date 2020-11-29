@@ -9,6 +9,8 @@ const {
   StreetView,
   Mission,
   Discovery,
+  updateUpVoteAction,
+  updateUpVoteResponse,
   AddNewTagResponse,
   TagUpdateInput,
   AddNewTagDataInput,
@@ -32,8 +34,9 @@ const Mutation = `type Mutation {
   #tagUpdate(data: TagUpdateInput!): TagUpdateResponse!
   #tagImageUrlAdd(id: ID, imageUrl: [String]!): TagDetail!
   addNewTagData(data: AddNewTagDataInput!): AddNewTagResponse
-  updateTagStatus(tagId: ID!, statusName: String!): Status!
+  updateTagStatus(tagId: ID!, statusName: String!, description: String): Status!
   addNewIntent(userIntent: String!, userAnswer: String!): String
+  updateUpVoteStatus(tagId: ID!, action: updateUpVoteAction!): updateUpVoteResponse
 }`;
 
 const typeDefs = gql(
@@ -50,6 +53,8 @@ const typeDefs = gql(
     Intent,
     Question,
     Mutation,
+    updateUpVoteAction,
+    updateUpVoteResponse,
     AddNewTagResponse,
     TagUpdateInput,
     AddNewTagDataInput,

@@ -6,7 +6,7 @@ const { createTestClient } = require('apollo-server-testing');
 const gql = require('graphql-tag');
 
 const apolloServer = require('./apolloTestServer');
-const FirebaseAPI = require('../firebase');
+const FirebaseAPI = require('../datasources/firebase');
 const {
   fakeTagData,
   mockFirebaseAdmin,
@@ -32,7 +32,7 @@ describe('test graphql query', () => {
     const { query } = createTestClient(server);
     queryClient = query;
 
-    // set up fake data to firestore
+    // set up firestore instance
     firestore = admin.firestore();
   });
   afterAll(async () => {
@@ -270,10 +270,19 @@ describe('test graphql mutate', () => {
     const testStatusName = '資訊有誤';
 
     const mutateTag = gql`
-      mutation tagUpdateTest($tagId: ID!, $statusName: String!) {
-        updateTagStatus(tagId: $tagId, statusName: $statusName) {
+      mutation tagUpdateTest(
+        $tagId: ID!
+        $statusName: String!
+        $description: String
+      ) {
+        updateTagStatus(
+          tagId: $tagId
+          statusName: $statusName
+          description: $description
+        ) {
           statusName
           createTime
+          description
         }
       }
     `;
@@ -282,6 +291,7 @@ describe('test graphql mutate', () => {
       variables: {
         tagId: fakeTagId,
         statusName: testStatusName,
+        description: 'test update status',
       },
     });
     // console.log(result.data);
@@ -292,6 +302,7 @@ describe('test graphql mutate', () => {
     expect(responseData).toMatchObject({
       statusName: testStatusName,
       createTime: expect.any(String),
+      description: 'test update status',
     });
 
     // test if the status update mutation would work
