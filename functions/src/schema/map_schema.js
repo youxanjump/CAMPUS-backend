@@ -16,8 +16,6 @@ const Tag = `type Tag {
   streetViewInfo: StreetView
   status: Status
   statusHistory: [Status]!
-  numberOfUpVote: Int
-  hasUpVote: Boolean
 }`;
 
 const Category = `type Category {
@@ -31,6 +29,13 @@ const Status = `type Status {
   createTime: String!
   createUser: User
   description: String
+  "Only available in 問題任務, otherwise null"
+  numberOfUpVote: Int
+  """
+  Only available in 問題任務, otherwise null. 
+  In the \`statusHistory\` this field would also be null
+  """
+  hasUpVote: Boolean
 }`;
 
 const User = `type User {
