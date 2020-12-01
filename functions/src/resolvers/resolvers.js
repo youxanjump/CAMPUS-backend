@@ -46,6 +46,12 @@ const mutationResolvers = {
     addNewIntent: (_, { userIntent, userAnswer }, { dataSources }) => {
       return dataSources.firebaseAPI.addNewIntent({ userIntent, userAnswer });
     },
+    updateUpVoteStatus: async (
+      _,
+      { tagId, action },
+      { dataSources, userInfo }
+    ) =>
+      dataSources.firebaseAPI.updateNumberOfUpVote({ tagId, action, userInfo }),
   },
 };
 

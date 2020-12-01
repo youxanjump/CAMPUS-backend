@@ -110,12 +110,12 @@ class FirebaseAPI extends DataSource {
   /**
    * Get image urls of specific tag
    * @param {object} param
-   * @param {string} param.tagID the ID of the tag
+   * @param {string} param.tagId the ID of the tag
    * @returns {string[]} the image links of the current tag
    */
-  async getImageUrls({ tagID }) {
+  async getImageUrls({ tagId }) {
     const options = {
-      directory: tagID,
+      directory: tagId,
     };
     const [files] = await this.bucket.getFiles(options);
 
@@ -182,7 +182,7 @@ class FirebaseAPI extends DataSource {
    * get tag detail from collection `tag_detail`
    * @async
    * @param {object} param
-   * @param {string} param.tagID tagID of the document with detailed info.
+   * @param {string} param.tagId tagId of the document with detailed info.
    * @returns {object|null} Object of document data in collection `tagDetail`
    */
   async getTagData({ id }) {
@@ -202,8 +202,8 @@ class FirebaseAPI extends DataSource {
    * @param {DocumentReference} docRef The document we want to get the latest
    *   status
    */
-  async getStatusHistory({ tagID }) {
-    const docRef = await this.firestore.collection('tagData').doc(tagID);
+  async getStatusHistory({ tagId }) {
+    const docRef = await this.firestore.collection('tagData').doc(tagId);
     const statusDocSnap = await docRef
       .collection('status')
       .orderBy('createTime', 'desc')
@@ -310,6 +310,41 @@ class FirebaseAPI extends DataSource {
   }
 
   /**
+   * Get user's latest upvote status to specific tag.
+   * @param {object} param
+   * @param {String} param.tagId the id of the tag document we want to update
+   *  status
+   * @return {Integer} the latest status data
+   */
+  async getLatestStatusData({ tagId, userInfo }) {
+    const { uid } = userInfo;
+    const tagDocRef = this.firestore.collection('tagData').doc(tagId);
+
+    const { statusDocRef, ...latestStatusData } = await getLatestStatus(
+      tagDocRef
+    );
+
+    // if there is no status or the numberOfUpVote is null, raise error
+    if (!statusDocRef) {
+      throw Error('No status in this tag.');
+    }
+
+    // check if user has upvote
+    const tagStatusUpVoteUserRef = statusDocRef
+      .collection('UpVoteUser')
+      .doc(uid);
+    const tagStatusUpVoteUserSnap = await tagStatusUpVoteUserRef.get();
+
+    // if this task is not 問題任務, return `hasUpVote` with null
+    const { numberOfUpVote } = latestStatusData;
+    return {
+      ...latestStatusData,
+      hasUpVote:
+        numberOfUpVote !== null ? tagStatusUpVoteUserSnap.exists : null,
+    };
+  }
+
+  /**
    * Add tag data to collection `tagData` in firestore
    * @param {object} param
    * @param {object} param.tagData contain the necessary filed should
@@ -378,14 +413,14 @@ class FirebaseAPI extends DataSource {
     const tagDataDocumentData = await this.addTagDataToFirestore({ data, uid });
 
     // retrieve id of new added tag document
-    const { id: tagDataDocumentID } = tagDataDocumentData;
+    const { id: tagDataDocumentId } = tagDataDocumentData;
 
     const { imageNumber } = data;
     return {
       tag: tagDataDocumentData,
       imageNumber,
       imageUploadUrl: await Promise.all(
-        getImageUploadUrls(this.bucket, imageNumber, tagDataDocumentID)
+        getImageUploadUrls(this.bucket, imageNumber, tagDataDocumentId)
       ),
     };
   } // function async updateTagData
@@ -431,37 +466,46 @@ class FirebaseAPI extends DataSource {
     checkUserLogIn(logIn);
     const tagDocRef = this.firestore.collection('tagData').doc(tagId);
 
-    const {
-      statusDocRef: tagStatusDocRef,
-      numberOfUpVote,
-    } = await getLatestStatus(tagDocRef);
+    const { statusDocRef: tagStatusDocRef } = await getLatestStatus(tagDocRef);
     // if there is no status or the numberOfUpVote is null, raise error
     if (!tagStatusDocRef) {
       throw Error('No status in this tag.');
-    }
-    if (!numberOfUpVote && numberOfUpVote !== 0) {
-      throw Error('No need to use NumberOfUpVote in this status.');
     }
 
     const tagStatusUpVoteUserRef = tagStatusDocRef
       .collection('UpVoteUser')
       .doc(uid);
-    await this.firestore.runTransaction(async t => {
+
+    return this.firestore.runTransaction(async t => {
       const tagStatusUpVoteUserSnap = await t.get(tagStatusUpVoteUserRef);
+      const { numberOfUpVote } = (await tagStatusDocRef.get()).data();
+      if (numberOfUpVote == null) {
+        throw Error('No need to use NumberOfUpVote in this status.');
+      }
       if (action === upVoteActionName && !tagStatusUpVoteUserSnap.exists) {
         t.update(tagStatusDocRef, {
-          numberOfUpVote: this.admin.firestore.FieldValue.increment(1),
+          numberOfUpVote: numberOfUpVote + 1,
         });
         t.set(tagStatusUpVoteUserRef, { hasUpVote: true });
-      } else if (
-        action === cancelUpVoteActionName &&
-        tagStatusUpVoteUserSnap.exists
-      ) {
+        return {
+          tagId,
+          numberOfUpVote: numberOfUpVote + 1,
+          hasUpVote: true,
+        };
+      }
+      if (action === cancelUpVoteActionName && tagStatusUpVoteUserSnap.exists) {
         t.update(tagStatusDocRef, {
-          numberOfUpVote: this.admin.firestore.FieldValue.increment(-1),
+          numberOfUpVote: numberOfUpVote - 1,
         });
         t.delete(tagStatusUpVoteUserRef);
+        return {
+          tagId,
+          numberOfUpVote: numberOfUpVote - 1,
+          hasUpVote: false,
+        };
       }
+
+      throw Error('Error happened when udpate numberOfUpVote')
     });
   }
 
