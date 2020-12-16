@@ -88,18 +88,7 @@ const AddNewTagResponse = `type AddNewTagResponse {
   imageUploadUrl: [String]!
 }`;
 
-const TagUpdateInput = `input TagUpdateInput {
-  "set null if we want to create new data"
-  id: ID
-  "true if modifing existing tag; false if creaing new tag"
-  modify: Boolean!
-  locationName: String
-  accessibility: Float
-  coordinates: CoordinateInput
-  description: String
-}`;
-
-const AddNewTagDataInput = `input AddNewTagDataInput {
+const TagDataInput = `input TagDataInput {
   locationName: String!
   accessibility: Float
   category: CategoryInput!
@@ -143,8 +132,7 @@ module.exports = {
   updateUpVoteAction,
   updateUpVoteResponse,
   AddNewTagResponse,
-  TagUpdateInput,
-  AddNewTagDataInput,
+  TagDataInput,
   CoordinateInput,
   CategoryInput,
   StreetViewInput,

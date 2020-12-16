@@ -31,6 +31,9 @@ const mutationResolvers = {
     addNewTagData: async (_, { data }, { dataSources, userInfo }) => {
       return dataSources.firebaseAPI.addNewTagData({ data, userInfo });
     },
+    tagDataUpdate: async (_, { tagId, data }, { dataSources, userInfo }) => {
+      return dataSources.firebaseAPI.updateTagData({ tagId, data, userInfo });
+    },
     updateTagStatus: async (
       _,
       { tagId, statusName, description },

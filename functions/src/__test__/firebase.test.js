@@ -43,10 +43,13 @@ describe('test data add/update operation', () => {
     const data = { ...fakeTagData };
     const { uid } = fakeUserInfo;
 
-    const docData = await firebaseAPIinstance.addTagDataToFirestore({
-      data,
-      uid,
-    });
+    const docData = await firebaseAPIinstance.addorUpdateTagDataToFirestore(
+      'add',
+      {
+        data,
+        uid,
+      }
+    );
 
     // console.log(data);
     expect(docData).toMatchObject({
@@ -84,10 +87,13 @@ describe('test data add/update operation', () => {
     delete data.description;
     delete data.streetViewInfo;
 
-    const docData = await firebaseAPIinstance.addTagDataToFirestore({
-      data,
-      uid,
-    });
+    const docData = await firebaseAPIinstance.addorUpdateTagDataToFirestore(
+      'add',
+      {
+        data,
+        uid,
+      }
+    );
 
     // console.log(data);
     expect(docData).toMatchObject({
