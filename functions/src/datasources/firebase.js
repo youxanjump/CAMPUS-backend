@@ -346,11 +346,13 @@ class FirebaseAPI extends DataSource {
 
   /**
    * Add tag data to collection `tagData` in firestore
+   * @param {String} action "add" or "update", the action of the tagData operation
    * @param {object} param
    * @param {object} param.tagData contain the necessary filed should
    *  be added to tagData document
+   * @param {object} param.uid The uid of the user who initiate the action
    */
-  async addTagDataToFirestore({ data, uid }) {
+  async addorUpdateTagDataToFirestore(action, { tagId = '', data, uid }) {
     const {
       locationName,
       accessibility,
@@ -368,28 +370,41 @@ class FirebaseAPI extends DataSource {
         parseFloat(coordinates.longitude)
       ),
       // originally tagDetail
-      createTime: this.admin.firestore.FieldValue.serverTimestamp(),
       lastUpdateTime: this.admin.firestore.FieldValue.serverTimestamp(),
       createUserId: uid,
       description: description || '',
       streetViewInfo: streetViewInfo || null,
     };
-    const defaultStatus = {
-      statusName: getDefaultStatus(category.missionName),
-      createTime: this.admin.firestore.FieldValue.serverTimestamp(),
-      createUserId: uid,
-      numberOfUpVote: category.missionName === '問題任務' ? 0 : null,
-    };
 
     const tagGeoRef = this.geofirestore.collection('tagData');
 
-    // add tagData to server
-    const refAfterTagAdd = await tagGeoRef.add(tagData);
+    if (action === 'add') {
+      tagData.createTime = this.admin.firestore.FieldValue.serverTimestamp();
+      const defaultStatus = {
+        statusName: getDefaultStatus(category.missionName),
+        createTime: this.admin.firestore.FieldValue.serverTimestamp(),
+        createUserId: uid,
+        numberOfUpVote: category.missionName === '問題任務' ? 0 : null,
+      };
 
-    // add tag default status, need to use original CollectionReference
-    await refAfterTagAdd.collection('status').native.add(defaultStatus);
+      // add tagData to server
+      const refAfterTagAdd = await tagGeoRef.add(tagData);
 
-    return getDataFromTagDocRef(refAfterTagAdd.native);
+      // add tag default status, need to use original CollectionReference
+      await refAfterTagAdd.collection('status').native.add(defaultStatus);
+
+      return getDataFromTagDocRef(refAfterTagAdd.native);
+    }
+    if (action === 'update') {
+      const refOfUpdateTag = tagGeoRef.doc(tagId);
+
+      // update tagData to server
+      await refOfUpdateTag.update(tagData);
+
+      return getDataFromTagDocRef(refOfUpdateTag.native);
+    }
+
+    throw Error('Undefined action of tagData operation.');
   }
 
   // TODO: if id is null, add data, else update data and udptetime
@@ -397,7 +412,7 @@ class FirebaseAPI extends DataSource {
   // TODO: refactor this function. Extract the verification process
   // to resolver
   /**
-   * Add or update tag data. Currently not implement updata function.
+   * Add tag data.
    * @param {object} param
    * @param {AddNewTagDataInputObject} param.data `AddNewTagDataInput` data
    * @param {DecodedIdToken} param.me have `uid` properity which specify
@@ -410,7 +425,13 @@ class FirebaseAPI extends DataSource {
     const { logIn, uid } = userInfo;
     checkUserLogIn(logIn);
     // add tagData to firestore
-    const tagDataDocumentData = await this.addTagDataToFirestore({ data, uid });
+    const tagDataDocumentData = await this.addorUpdateTagDataToFirestore(
+      'add',
+      {
+        data,
+        uid,
+      }
+    );
 
     // retrieve id of new added tag document
     const { id: tagDataDocumentId } = tagDataDocumentData;
@@ -423,6 +444,31 @@ class FirebaseAPI extends DataSource {
         getImageUploadUrls(this.bucket, imageNumber, tagDataDocumentId)
       ),
     };
+  } // function async addNewTagData
+
+  /**
+   * Update tag data.
+   * @param {object} param
+   * @param {AddNewTagDataInputObject} param.data `AddNewTagDataInput` data
+   * @param {DecodedIdToken} param.me Have `uid` properity which specify
+   *  the uid of the user.
+   * @return {Tag} Updated tag data
+   */
+  async updateTagData({ tagId, data, userInfo }) {
+    // check user status
+    const { logIn, uid } = userInfo;
+    checkUserLogIn(logIn);
+    // add tagData to firestore
+    const tagDataDocumentData = await this.addorUpdateTagDataToFirestore(
+      'update',
+      {
+        tagId,
+        data,
+        uid,
+      }
+    );
+
+    return tagDataDocumentData;
   } // function async updateTagData
 
   /**
@@ -505,7 +551,7 @@ class FirebaseAPI extends DataSource {
         };
       }
 
-      throw Error('Error happened when udpate numberOfUpVote')
+      throw Error('Error happened when udpate numberOfUpVote');
     });
   }
 
