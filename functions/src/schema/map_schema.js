@@ -16,8 +16,6 @@ const Tag = `type Tag {
   streetViewInfo: StreetView
   status: Status
   statusHistory: [Status]!
-  numberOfUpVote: Int
-  hasUpVote: Boolean
 }`;
 
 const Category = `type Category {
@@ -31,6 +29,13 @@ const Status = `type Status {
   createTime: String!
   createUser: User
   description: String
+  "Only available in 問題任務, otherwise null"
+  numberOfUpVote: Int
+  """
+  Only available in 問題任務, otherwise null. 
+  In the \`statusHistory\` this field would also be null
+  """
+  hasUpVote: Boolean
 }`;
 
 const User = `type User {
@@ -83,18 +88,7 @@ const AddNewTagResponse = `type AddNewTagResponse {
   imageUploadUrl: [String]!
 }`;
 
-const TagUpdateInput = `input TagUpdateInput {
-  "set null if we want to create new data"
-  id: ID
-  "true if modifing existing tag; false if creaing new tag"
-  modify: Boolean!
-  locationName: String
-  accessibility: Float
-  coordinates: CoordinateInput
-  description: String
-}`;
-
-const AddNewTagDataInput = `input AddNewTagDataInput {
+const TagDataInput = `input TagDataInput {
   locationName: String!
   accessibility: Float
   category: CategoryInput!
@@ -138,8 +132,7 @@ module.exports = {
   updateUpVoteAction,
   updateUpVoteResponse,
   AddNewTagResponse,
-  TagUpdateInput,
-  AddNewTagDataInput,
+  TagDataInput,
   CoordinateInput,
   CategoryInput,
   StreetViewInput,

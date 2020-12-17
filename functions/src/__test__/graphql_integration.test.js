@@ -46,7 +46,7 @@ describe('test graphql query', () => {
     fakeTagId = response.tag.id;
   });
 
-  test('test query tagRenderList', async () => {
+  test('test query tagRenderList, but is not 問題任務', async () => {
     const queryTagRenderList = gql`
       query {
         tagRenderList {
@@ -65,10 +65,14 @@ describe('test graphql query', () => {
           status {
             statusName
             createTime
+            numberOfUpVote
+            hasUpVote
           }
           statusHistory {
             statusName
             createTime
+            numberOfUpVote
+            hasUpVote
           }
         }
       }
@@ -93,11 +97,15 @@ describe('test graphql query', () => {
       status: {
         statusName: expect.any(String),
         createTime: expect.any(String),
+        numberOfUpVote: null,
+        hasUpVote: null,
       },
       statusHistory: [
         {
           statusName: expect.any(String),
           createTime: expect.any(String),
+          numberOfUpVote: null,
+          hasUpVote: null,
         },
       ],
     });
@@ -142,6 +150,47 @@ describe('test graphql query', () => {
     expect(tagInFirestore).toMatchObject({
       createTime: expect.any(firebase.firestore.Timestamp),
       lastUpdateTime: expect.any(firebase.firestore.Timestamp),
+    });
+  });
+  test('test query tag with 問題任務, which has information about numberOfUpVote and hasUpVote', async () => {
+    const response = await addFakeDataToFirestore(firebaseAPIinstance, true);
+    const tagId = response.tag.id;
+    const queryTag = gql`
+      query testQueyTag($id: ID!) {
+        tag(id: $id) {
+          status {
+            statusName
+            createTime
+            numberOfUpVote
+            hasUpVote
+          }
+          statusHistory {
+            statusName
+            createTime
+            numberOfUpVote
+            hasUpVote
+          }
+        }
+      }
+    `;
+    const result = await queryClient({
+      query: queryTag,
+      variables: { id: tagId },
+    });
+    // NEXT
+    const tagResult = result.data.tag;
+
+    expect(tagResult.status).toMatchObject({
+      statusName: expect.any(String),
+      createTime: expect.any(String),
+      numberOfUpVote: expect.any(Number),
+      hasUpVote: expect.any(Boolean),
+    });
+    expect(tagResult.statusHistory[0]).toMatchObject({
+      statusName: expect.any(String),
+      createTime: expect.any(String),
+      numberOfUpVote: expect.any(Number),
+      hasUpVote: null,
     });
   });
   test('test query userAddTagHistory', async () => {
@@ -201,9 +250,9 @@ describe('test graphql mutate', () => {
     await clearFirestoreDatabase(testProjectId);
   });
 
-  test('test mutate tag data', async () => {
+  test('test add tag data', async () => {
     const mutateTag = gql`
-      mutation tagUpdateTest($data: AddNewTagDataInput!) {
+      mutation tagUpdateTest($data: TagDataInput!) {
         addNewTagData(data: $data) {
           tag {
             id
@@ -260,6 +309,49 @@ describe('test graphql mutate', () => {
       lastUpdateTime: expect.any(firebase.firestore.Timestamp),
       description: fakeTagData.description,
       streetViewInfo: fakeTagData.streetViewInfo,
+    });
+  });
+
+  test('test update tag data', async () => {
+    const mutateTag = gql`
+      mutation tagUpdateTest($tagId: ID!, $data: TagDataInput!) {
+        tagDataUpdate(tagId: $tagId, data: $data) {
+          id
+          locationName
+          description
+        }
+      }
+    `;
+    const latestDescription = 'latest changed update description';
+    const data = {
+      ...fakeTagData,
+      coordinates: {
+        latitude: fakeTagData.coordinatesString.latitude,
+        longitude: fakeTagData.coordinatesString.longitude,
+      },
+      description: latestDescription,
+      streetViewInfo: fakeTagData.streetViewInfo,
+    };
+    delete data.status;
+    delete data.coordinatesString;
+
+    // first add data to firestore
+    const response = await addFakeDataToFirestore(firebaseAPIinstance);
+    const fakeTagId = response.tag.id;
+
+    const result = await mutateClient({
+      mutation: mutateTag,
+      variables: {
+        tagId: fakeTagId,
+        data,
+      },
+    });
+
+    const responseData = result.data.tagDataUpdate;
+    expect(responseData).toMatchObject({
+      id: expect.any(String),
+      locationName: data.locationName,
+      description: latestDescription,
     });
   });
 
@@ -328,5 +420,112 @@ describe('test graphql mutate', () => {
 
     expect(tagRenderListResult[0].statusHistory).toHaveLength(2);
     expect(tagRenderListResult[0].status.statusName).toEqual(testStatusName);
+  });
+  test('test `updateUpVoteStatus` and upvote related query', async () => {
+    const response = await addFakeDataToFirestore(firebaseAPIinstance, true);
+
+    // upvote
+    const mutateTag = gql`
+      mutation upVoteTest($tagId: ID!, $action: updateUpVoteAction!) {
+        updateUpVoteStatus(tagId: $tagId, action: $action) {
+          tagId
+          numberOfUpVote
+          hasUpVote
+        }
+      }
+    `;
+    const result = await mutateClient({
+      mutation: mutateTag,
+      variables: {
+        tagId: response.tag.id,
+        action: 'UPVOTE',
+      },
+    });
+
+    const mutateResponse = result.data.updateUpVoteStatus;
+    expect(mutateResponse).toMatchObject({
+      tagId: response.tag.id,
+      numberOfUpVote: 1,
+      hasUpVote: true,
+    });
+
+    // test if query can get the upvote number
+    const queryStatusTag = gql`
+      query testQueyTag($id: ID!) {
+        tag(id: $id) {
+          status {
+            statusName
+            createTime
+            numberOfUpVote
+            hasUpVote
+          }
+        }
+      }
+    `;
+    const queryResult = await queryClient({
+      query: queryStatusTag,
+      variables: {
+        id: response.tag.id,
+      },
+    });
+    // console.log(queryResult.data.tag);
+    expect(queryResult.data.tag.status).toMatchObject({
+      statusName: '待處理',
+      createTime: expect.any(String),
+      numberOfUpVote: 1,
+      hasUpVote: true,
+    });
+
+    // cancel upvote
+    const cancelMutateTag = gql`
+      mutation upVoteTest($tagId: ID!, $action: updateUpVoteAction!) {
+        updateUpVoteStatus(tagId: $tagId, action: $action) {
+          tagId
+          numberOfUpVote
+          hasUpVote
+        }
+      }
+    `;
+    const cancelResult = await mutateClient({
+      mutation: cancelMutateTag,
+      variables: {
+        tagId: response.tag.id,
+        action: 'CANCEL_UPVOTE',
+      },
+    });
+
+    const cancelMutateResponse = cancelResult.data.updateUpVoteStatus;
+    expect(cancelMutateResponse).toMatchObject({
+      tagId: response.tag.id,
+      numberOfUpVote: 0,
+      hasUpVote: false,
+    });
+
+    // test if query can get the upvote number
+    const queryCancelStatusTag = gql`
+      query testQueyTag($id: ID!) {
+        tag(id: $id) {
+          status {
+            statusName
+            createTime
+            numberOfUpVote
+            hasUpVote
+          }
+        }
+      }
+    `;
+    const queryCancelResult = await queryClient({
+      query: queryCancelStatusTag,
+      variables: {
+        id: response.tag.id,
+      },
+    });
+    // console.log(queryCancelResult.data.tag);
+    expect(queryCancelResult.data.tag.status).toMatchObject({
+      statusName: '待處理',
+      createTime: expect.any(String),
+      numberOfUpVote: 0,
+      hasUpVote: false,
+    });
   });
 });

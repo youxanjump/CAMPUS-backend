@@ -9,9 +9,11 @@ const tagResolvers = {
       uid: tag.createUserId || tag.createUserID,
     }),
     imageUrl: async (tag, _, { dataSources }) =>
-      dataSources.firebaseAPI.getImageUrls({ tagID: tag.id }),
+      dataSources.firebaseAPI.getImageUrls({ tagId: tag.id }),
+    status: async (tag, _, { dataSources, userInfo }) =>
+      dataSources.firebaseAPI.getLatestStatusData({ tagId: tag.id, userInfo }),
     statusHistory: async (tag, _, { dataSources }) =>
-      dataSources.firebaseAPI.getStatusHistory({ tagID: tag.id }),
+      dataSources.firebaseAPI.getStatusHistory({ tagId: tag.id }),
   },
 };
 
